@@ -358,8 +358,8 @@
           <button type="button" id="printIndividualBtn">Individual Coach Rosters</button>
         </div>
       </div>
-      <button class="header-btn" id="exportBtn">EXPORT BACKUP</button>
-      <button class="header-btn ghost" id="importBtn">IMPORT BACKUP</button>
+      <button class="header-btn scheduler-gated-btn" id="exportBtn">EXPORT BACKUP</button>
+      <button class="header-btn ghost scheduler-gated-btn" id="importBtn">IMPORT BACKUP</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -732,6 +732,7 @@
     if(!canSchedule && activeTab === 'setup') switchTab('schedule');
 
     document.querySelectorAll('.admin-gated').forEach(panel => panel.classList.toggle('admin-unlocked', isAdmin));
+    document.querySelectorAll('.scheduler-gated-btn').forEach(btn => btn.style.display = canSchedule ? '' : 'none');
     document.body.classList.toggle('is-view-only-role', !canSchedule);
     ['schedule','rotations','staffing'].forEach(t => {
       const note = document.getElementById('viewOnlyNote-' + t);
@@ -1596,6 +1597,7 @@
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}-${pad(d.getMinutes())}`;
   }
   document.getElementById('exportBtn').addEventListener('click', () => {
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Export is only available to Schedulers and Admins.'); return; }
     const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1606,11 +1608,13 @@
     URL.revokeObjectURL(url);
   });
   document.getElementById('importBtn').addEventListener('click', () => {
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); return; }
     document.getElementById('importFile').click();
   });
   document.getElementById('importFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(!file) return;
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); e.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => {
       try{
