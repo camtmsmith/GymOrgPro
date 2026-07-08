@@ -328,8 +328,8 @@
     <div class="roster-switch" id="rosterSwitch" style="display:none;">
       <label for="rosterSelect">Roster</label>
       <select id="rosterSelect"></select>
-      <button type="button" class="header-btn ghost" id="newRosterBtn">+ New</button>
-      <div class="roster-manage-wrap">
+      <button type="button" class="header-btn ghost scheduler-gated-btn" id="newRosterBtn" title="Scheduler/Admin only">+ New</button>
+      <div class="roster-manage-wrap admin-gated-control" title="Admin only">
         <button type="button" class="header-btn ghost" id="manageRostersBtn">Manage ▾</button>
         <div class="roster-manage-panel" id="rosterManagePanel">
           <p class="roster-manage-title">Manage rosters</p>
@@ -634,7 +634,6 @@
   // find them. It's meant to keep casual/random visitors out, not to replace
   // proper access control. For that, Firebase Authentication is the right tool.
   const ACCESS_PASSWORD = 'GymOrgPro';       // required to open/edit any roster
-  const UNHIDE_PASSWORD = 'GymOrgPro!';      // required to reveal hidden rosters
   const ACCESS_UNLOCK_KEY = 'gym-scheduler-unlocked';
 
   function checkAccessGate(){
@@ -773,6 +772,7 @@
 
     document.querySelectorAll('.admin-gated').forEach(panel => panel.classList.toggle('admin-unlocked', isAdmin));
     document.querySelectorAll('.scheduler-gated-btn').forEach(btn => btn.style.display = canSchedule ? '' : 'none');
+    document.querySelectorAll('.admin-gated-control').forEach(el => el.style.display = isAdmin ? '' : 'none');
     document.body.classList.toggle('is-view-only-role', !canSchedule);
     ['schedule','rotations','staffing'].forEach(t => {
       const note = document.getElementById('viewOnlyNote-' + t);
@@ -1525,14 +1525,6 @@
     }
   });
   document.getElementById('showHiddenRostersCb').addEventListener('change', (e) => {
-    if(e.target.checked){
-      const pw = window.prompt('Password to view hidden rosters:');
-      if(pw !== UNHIDE_PASSWORD){
-        e.target.checked = false;
-        showFlash('Incorrect password — hidden rosters stay hidden.');
-        return;
-      }
-    }
     showHiddenRosters = e.target.checked;
     renderRosterManagePanel();
   });
