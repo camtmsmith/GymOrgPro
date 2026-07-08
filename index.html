@@ -53,6 +53,17 @@
   .admin-real-content{display:none;}
   .panel.admin-gated.admin-unlocked .admin-locked-content{display:none;}
   .panel.admin-gated.admin-unlocked .admin-real-content{display:block;}
+  .admin-unlock-form{display:flex;gap:8px;align-items:center;margin-top:12px;max-width:320px;}
+  .admin-unlock-input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;}
+  .admin-unlock-btn{padding:8px 14px;font-size:11px;}
+  .admin-unlock-error{color:var(--mat-red);font-size:12px;margin:10px 0 0;}
+  .admin-lock-btn-inline{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;background:var(--chalk);border:1px solid var(--line);border-radius:100px;padding:4px 10px;cursor:pointer;color:var(--slate);vertical-align:middle;margin-left:4px;}
+  .admin-lock-btn-inline:hover{border-color:var(--ink);color:var(--ink);}
+
+  /* ---- lesson plans ---- */
+  .lp-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:6px;}
+  .lp-field{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);}
+  .lp-field input{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);}
 
   /* ---- shared-password access gate ---- */
   .access-gate{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,var(--ink) 0%,var(--ink-2) 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -63,26 +74,6 @@
   .access-gate-card input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;box-sizing:border-box;}
   .access-gate-card .header-btn{width:100%;padding:10px;font-size:12px;}
   .access-gate-error{color:var(--mat-red);font-size:12px;margin:12px 0 0;}
-
-  /* ---- per-person sign-in (name + PIN) and role-based access ---- */
-  .user-gate-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px;text-align:left;}
-  .user-gate-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--chalk);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--ink);}
-  .user-gate-btn:hover{border-color:var(--ink);}
-  .user-gate-btn.selected{border-color:var(--gold);background:var(--gold-soft);}
-  .user-gate-role-tag{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);background:var(--panel);border:1px solid var(--line);border-radius:100px;padding:3px 8px;white-space:nowrap;}
-  .current-user-chip{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:6px 12px;color:#fff;white-space:nowrap;}
-  .current-user-chip strong{font-family:'Inter',sans-serif;}
-  .current-user-chip .role-tag{background:var(--gold);color:var(--ink);border-radius:100px;padding:2px 8px;font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.04em;}
-  .view-only-note{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.02em;background:var(--gold-soft);color:#8A6D10;border:1px solid #E9DCA8;border-radius:8px;padding:9px 12px;margin-bottom:14px;}
-  .role-select{padding:5px;border:1px solid var(--line);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;}
-  .pin-input{width:74px;padding:5px;border:1px solid var(--line);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;}
-  /* view-only roles (Coach / Viewer) can look at the live grids but not edit them */
-  body.is-view-only-role #scheduleList,
-  body.is-view-only-role #rotaBoard,
-  body.is-view-only-role #rotaBySquadBoard,
-  body.is-view-only-role #rosterTable,
-  body.is-view-only-role #coachRosterTable,
-  body.is-view-only-role #coachLoadTable { pointer-events:none; opacity:.85; }
   .status-chip{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:6px 14px;display:flex;align-items:center;gap:8px;white-space:nowrap;}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--spring);}
   .header-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.03em;background:var(--gold);color:var(--ink);border:none;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:700;}
@@ -295,31 +286,11 @@
   </div>
 </div>
 
-<!-- Second, lighter-weight layer: once past the shared password above, each
-     person identifies themselves so the app knows their access level. This
-     is a prototype-grade lock (same caveat as the shared password — it's all
-     in this file's plain-text source), not real authentication. -->
-<div class="access-gate" id="userGate">
-  <div class="access-gate-card">
-    <p class="access-gate-title">Who's this?</p>
-    <p class="access-gate-desc">Pick your name and enter your PIN. An Admin can add you and set your access level under Setup → Team &amp; Access.</p>
-    <div class="user-gate-list" id="userGateList"></div>
-    <input type="password" id="userGatePin" placeholder="PIN" autocomplete="off" style="display:none;">
-    <button type="button" class="header-btn" id="userGateSubmit" style="display:none;">Sign In</button>
-    <p class="access-gate-error" id="userGateError" style="display:none;">Incorrect PIN — try again.</p>
-  </div>
-</div>
-
 <div class="top-bar">
 <div class="board-header">
   <div class="board-header-inner">
     <p class="header-title-line"><span id="mainTitle">Gym Org Pro</span><span class="version" id="versionTag">· v1.0</span></p>
     <span class="shared-badge" id="sharedBadge" style="display:none;" title="Everyone who opens this link sees and can edit the same schedule.">⚠ SHARED — visible to anyone with this link</span>
-    <div class="current-user-chip" id="currentUserChip" style="display:none;">
-      <span>Signed in: <strong id="currentUserName"></strong></span>
-      <span class="role-tag" id="currentUserRole"></span>
-      <button type="button" class="header-btn ghost" id="switchUserBtn">Switch</button>
-    </div>
     <div class="roster-switch" id="rosterSwitch" style="display:none;">
       <label for="rosterSelect">Roster</label>
       <select id="rosterSelect"></select>
@@ -347,6 +318,7 @@
       <button class="tab-btn" data-tab="rotations">03 · Rotations</button>
       <button class="tab-btn" data-tab="staffing">04 · Staffing</button>
       <button class="tab-btn" data-tab="overview">05 · Overview</button>
+      <button class="tab-btn" data-tab="lessonplans">06 · Lesson Plans</button>
     </div>
     <div class="tab-bar-actions">
       <div class="print-menu-wrap">
@@ -358,8 +330,8 @@
           <button type="button" id="printIndividualBtn">Individual Coach Rosters</button>
         </div>
       </div>
-      <button class="header-btn scheduler-gated-btn" id="exportBtn">EXPORT BACKUP</button>
-      <button class="header-btn ghost scheduler-gated-btn" id="importBtn">IMPORT BACKUP</button>
+      <button class="header-btn" id="exportBtn">EXPORT BACKUP</button>
+      <button class="header-btn ghost" id="importBtn">IMPORT BACKUP</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -373,7 +345,6 @@
     <div class="setup-subnav" id="setupSubnav">
       <button type="button" class="subnav-btn" data-target="panel-program-details">Program Details</button>
       <button type="button" class="subnav-btn" data-target="panel-rotation-settings">Rotation Settings</button>
-      <button type="button" class="subnav-btn" data-target="panel-team-access">Team &amp; Access</button>
       <button type="button" class="subnav-btn" data-target="panel-coaching-levels">Coaching Levels</button>
       <button type="button" class="subnav-btn" data-target="panel-squads">Squads</button>
       <button type="button" class="subnav-btn" data-target="panel-stations">Gym Stations</button>
@@ -385,10 +356,15 @@
     <div class="panel admin-gated" id="panel-program-details">
       <div class="admin-locked-content">
         <p class="panel-title">🔒 Program Details <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin (see Team &amp; Access below) to unlock it.</p>
+        <p class="panel-desc">This section is restricted to admin users. Enter the admin password to unlock it.</p>
+        <div class="admin-unlock-form">
+          <input type="password" class="admin-unlock-input" placeholder="Admin password" autocomplete="off">
+          <button type="button" class="header-btn admin-unlock-btn">Unlock</button>
+        </div>
+        <p class="admin-unlock-error" style="display:none;">Incorrect password.</p>
       </div>
       <div class="admin-real-content">
-        <p class="panel-title">Program Details <span class="admin-badge">ADMIN ONLY</span></p>
+        <p class="panel-title">Program Details <span class="admin-badge">ADMIN ONLY</span> <button type="button" class="admin-lock-btn-inline">🔒 Lock</button></p>
         <p class="panel-desc">Shown in the header as "Gym Org Pro - {Gym Name} - {Location}". Leave either blank to omit it.</p>
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
           <label style="display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);">
@@ -406,30 +382,21 @@
     <div class="panel admin-gated" id="panel-rotation-settings">
       <div class="admin-locked-content">
         <p class="panel-title">🔒 Rotation Settings <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin (see Team &amp; Access below) to unlock it.</p>
+        <p class="panel-desc">This section is restricted to admin users. Enter the admin password to unlock it.</p>
+        <div class="admin-unlock-form">
+          <input type="password" class="admin-unlock-input" placeholder="Admin password" autocomplete="off">
+          <button type="button" class="header-btn admin-unlock-btn">Unlock</button>
+        </div>
+        <p class="admin-unlock-error" style="display:none;">Incorrect password.</p>
       </div>
       <div class="admin-real-content">
-        <p class="panel-title">Rotation Settings <span class="admin-badge">ADMIN ONLY</span></p>
+        <p class="panel-title">Rotation Settings <span class="admin-badge">ADMIN ONLY</span> <button type="button" class="admin-lock-btn-inline">🔒 Lock</button></p>
         <p class="panel-desc">How long each rotation slot lasts. All session durations round to the nearest multiple of this value. Existing station picks carry over automatically: <strong>shrinking</strong> this value is lossless (each pick fills the new, smaller slots it spans), while <strong>growing</strong> it combines multiple slots into one and keeps only the earliest pick where they conflict.</p>
         <label style="display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--slate);">
           Rotation length
           <input type="number" id="rotationLengthInput" min="5" max="60" step="1" style="width:64px;padding:7px;border:1px solid var(--line);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;">
           minutes (5–60)
         </label>
-      </div>
-    </div>
-
-    <div class="panel admin-gated" id="panel-team-access">
-      <div class="admin-locked-content">
-        <p class="panel-title">🔒 Team &amp; Access <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin to unlock it.</p>
-      </div>
-      <div class="admin-real-content">
-        <p class="panel-title">Team &amp; Access <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">Add everyone who needs to open this schedule and set what they can do — the principle is to give each person the least access that still lets them do their job. <strong>Admin</strong>: full control, including this panel, Program Details and Rotation Settings. <strong>Scheduler</strong>: day-to-day editing — Training Schedule, Rotations, Staffing, plus Squads/Stations/Coaches/Conflicts/Capacity — but not the settings above. <strong>Coach</strong>: can view every tab, including their own roster, but can't change anything. <strong>Viewer</strong>: read-only — good for a front-desk screen or a link shared with parents.</p>
-        <div id="userList"></div>
-        <button class="add-btn" id="addUserBtn">+ ADD TEAM MEMBER</button>
-        <p class="hint" style="margin-top:10px;">Each person signs in once per browser with their name and PIN (below the shared password). Like the shared password, this is a lightweight, prototype-level lock — the PINs live in this file's data, not a real authentication system. For a production rollout, swap this for proper authentication (e.g. Firebase Authentication) tied to the same roles.</p>
       </div>
     </div>
 
@@ -479,7 +446,6 @@
 
   <!-- ===================== TRAINING SCHEDULE ===================== -->
   <div class="tab-panel" id="tab-schedule">
-    <p class="view-only-note" id="viewOnlyNote-schedule" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Session Times &amp; Coaches</p>
       <p class="panel-desc">Toggle the days each squad trains. Each day can have more than one session — e.g. a Morning and an Afternoon session — each with its own time, duration (in <span id="rlLabel1">15</span>-minute increments), and coach. This repeats the same every week; only the station rotations (next tab) vary across the two-week cycle.</p>
@@ -495,7 +461,6 @@
 
   <!-- ===================== ROTATIONS ===================== -->
   <div class="tab-panel" id="tab-rotations">
-    <p class="view-only-note" id="viewOnlyNote-rotations" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Rotation View</p>
       <p class="panel-desc">View one day with every squad's rotations side by side, or one squad's full two-week cycle at a glance.</p>
@@ -537,7 +502,6 @@
 
   <!-- ===================== STAFFING ===================== -->
   <div class="tab-panel" id="tab-staffing">
-    <p class="view-only-note" id="viewOnlyNote-staffing" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Staffing View</p>
       <p class="panel-desc">Switch between the daily roster (every session, grouped by day) and each coach's individual weekly roster.</p>
@@ -574,6 +538,40 @@
     </div>
   </div>
 
+  <!-- ===================== LESSON PLANS ===================== -->
+  <div class="tab-panel" id="tab-lessonplans">
+    <div class="panel">
+      <p class="panel-title">Generate Lesson Plans</p>
+      <p class="panel-desc">Produces one Word document per session in the date range below, organized into folders by squad and day (matching each session's actual time). Each document's header, coach details, and circuit list (station + duration) are filled in automatically from Training Schedule and Rotations. The Skill/KCP/Safety and warm-up/warm-down details are left blank for coaches to fill in themselves.</p>
+
+      <div class="lp-form-grid">
+        <label class="lp-field">
+          <span>Term / period label</span>
+          <input type="text" id="lpTermLabel" placeholder="e.g. Term 1">
+        </label>
+        <label class="lp-field">
+          <span>From date</span>
+          <input type="date" id="lpFromDate">
+        </label>
+        <label class="lp-field">
+          <span>To date</span>
+          <input type="date" id="lpToDate">
+        </label>
+        <label class="lp-field">
+          <span>Rotations "Week 1" starts on (a Monday)</span>
+          <input type="date" id="lpAnchorMonday">
+        </label>
+      </div>
+      <p class="hint">The Rotations tab's two-week cycle repeats indefinitely — this tells the generator which real Monday lines up with "Week 1" so it picks the correct station allocations for each date. It defaults to the Monday on/before "From date".</p>
+
+      <p class="panel-title" style="margin-top:22px;font-size:13px;">Squads to include</p>
+      <div class="squad-filter" id="lpSquadFilter"></div>
+
+      <button type="button" class="add-btn" id="lpGenerateBtn">Generate Lesson Plans (.zip)</button>
+      <p class="hint" id="lpStatus"></p>
+    </div>
+  </div>
+
   <footer>GYM ROTATION SCHEDULER — DATA SAVED AUTOMATICALLY TO THIS BROWSER PROFILE</footer>
 </div>
 
@@ -585,7 +583,7 @@
   const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const PALETTE = ['#B5292E','#1F7A5C','#C9A227','#2A5CAA','#7A4FA3','#B5602E','#3E8E8E','#8C3F63','#4B7B2A','#A6437A'];
   const STORAGE_KEY = 'gym-scheduler-state-v4';
-  const APP_VERSION = 'v3.0';
+  const APP_VERSION = 'v2.4.1';
   document.getElementById('versionTag').textContent = ' - ' + APP_VERSION.toUpperCase();
 
   // ---------------- shared-password access gate ----------------
@@ -620,125 +618,47 @@
   });
   checkAccessGate();
 
-  // ---------------- RBAC: roles, sign-in, and access rules ----------------
+  // ---------------- simple RBAC: admin-only panels ----------------
   // Same "soft deterrent" caveat as the access gate above — this is a UI-level
-  // lock, not real access control; the data (including PINs) lives in this
-  // file's plain-text source/state. It's meant to give each person the right
-  // *shape* of access, not to withstand someone reading the page source. For
-  // a production rollout, swap this for real authentication (e.g. Firebase
-  // Authentication) mapped onto the same four roles.
-  const ROLE_RANK = {viewer:0, coach:1, scheduler:2, admin:3};
-  const ROLE_LABELS = {admin:'Admin', scheduler:'Scheduler', coach:'Coach', viewer:'Viewer'};
-  let currentUserId = null;      // set once someone picks their name + PIN below
-  let pendingGateUserId = null;  // name picked in the sign-in gate, awaiting PIN
+  // lock, not real access control. It hides Program Details and Rotation
+  // Settings behind a second password so casual/non-admin users don't stumble
+  // into the most destructive settings, but it doesn't stop someone who reads
+  // the page source. Change ADMIN_PASSWORD below to your own value.
+  const ADMIN_PASSWORD = 'GymOrgProAdmin';
+  const ADMIN_UNLOCK_KEY = 'gym-scheduler-admin-unlocked';
 
-  function currentSessionKey(){ return 'gym-scheduler-current-user::' + currentRosterId; }
-  function getCurrentUser(){ return (state.users || []).find(u => u.id === currentUserId) || null; }
-  function currentRoleRank(){ const u = getCurrentUser(); return u ? (ROLE_RANK[u.role] ?? 0) : 0; }
-
-  // Called every render: restores a remembered sign-in for THIS roster if
-  // still valid, or opens the sign-in gate (per-roster, since a Scheduler on
-  // one roster/club might only be a Viewer on another).
-  function ensureUserSession(){
-    if(!currentUserId){
-      const stored = localStorage.getItem(currentSessionKey());
-      if(stored && (state.users || []).some(u => u.id === stored)) currentUserId = stored;
-    } else if(!(state.users || []).some(u => u.id === currentUserId)){
-      currentUserId = null; // signed-in person was removed from the team
-    }
-    const gate = document.getElementById('userGate');
-    if(currentUserId){
-      gate.classList.add('unlocked');
-    } else {
-      gate.classList.remove('unlocked');
-      renderUserGateList();
-    }
-  }
-  function renderUserGateList(){
-    const list = document.getElementById('userGateList');
-    list.innerHTML = '';
-    pendingGateUserId = null;
-    document.getElementById('userGatePin').style.display = 'none';
-    document.getElementById('userGateSubmit').style.display = 'none';
-    document.getElementById('userGateError').style.display = 'none';
-    if(!state.users || state.users.length === 0){
-      list.innerHTML = '<p class="empty-note">No team members set up yet — ask whoever set up this schedule to add you under Setup → Team &amp; Access.</p>';
-      return;
-    }
-    state.users.forEach(u => {
-      const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'user-gate-btn';
-      const nameEl = document.createElement('span'); nameEl.textContent = u.name;
-      const roleEl = document.createElement('span'); roleEl.className = 'user-gate-role-tag'; roleEl.textContent = ROLE_LABELS[u.role] || u.role;
-      btn.appendChild(nameEl); btn.appendChild(roleEl);
-      btn.addEventListener('click', () => selectGateUser(u.id, btn));
-      list.appendChild(btn);
+  function applyAdminUnlockUI(){
+    const unlocked = localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true';
+    document.querySelectorAll('.admin-gated').forEach(panel => {
+      panel.classList.toggle('admin-unlocked', unlocked);
     });
   }
-  function selectGateUser(id, btnEl){
-    pendingGateUserId = id;
-    document.querySelectorAll('#userGateList .user-gate-btn').forEach(b => b.classList.remove('selected'));
-    btnEl.classList.add('selected');
-    const pin = document.getElementById('userGatePin');
-    document.getElementById('userGateSubmit').style.display = '';
-    document.getElementById('userGateError').style.display = 'none';
-    pin.style.display = ''; pin.value = ''; pin.focus();
-  }
-  function attemptUserSignIn(){
-    const pinInput = document.getElementById('userGatePin');
-    const errorEl = document.getElementById('userGateError');
-    const user = (state.users || []).find(u => u.id === pendingGateUserId);
-    if(user && String(user.pin || '') === pinInput.value){
-      currentUserId = user.id;
-      localStorage.setItem(currentSessionKey(), user.id);
-      document.getElementById('userGate').classList.add('unlocked');
-      errorEl.style.display = 'none';
-      applyRoleUI();
-    } else {
-      errorEl.style.display = 'block';
-      pinInput.value = ''; pinInput.focus();
+  document.querySelectorAll('.admin-gated').forEach(panel => {
+    const input = panel.querySelector('.admin-unlock-input');
+    const btn = panel.querySelector('.admin-unlock-btn');
+    const errorEl = panel.querySelector('.admin-unlock-error');
+    function attemptAdminUnlock(){
+      if(input.value === ADMIN_PASSWORD){
+        localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
+        applyAdminUnlockUI();
+        errorEl.style.display = 'none';
+      } else {
+        errorEl.style.display = 'block';
+        input.value = '';
+        input.focus();
+      }
     }
-  }
-  document.getElementById('userGateSubmit').addEventListener('click', attemptUserSignIn);
-  document.getElementById('userGatePin').addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptUserSignIn(); });
-  document.getElementById('switchUserBtn').addEventListener('click', () => {
-    localStorage.removeItem(currentSessionKey());
-    currentUserId = null;
-    document.getElementById('userGate').classList.remove('unlocked');
-    renderUserGateList();
+    btn.addEventListener('click', attemptAdminUnlock);
+    input.addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptAdminUnlock(); });
   });
-
-  // Applies the signed-in person's role to the UI: which tabs/panels they can
-  // reach, and whether the live grids (schedule/rotations/staffing) are
-  // editable or view-only. Runs every render, so a role change (or someone
-  // else editing the team list) takes effect immediately.
-  function applyRoleUI(){
-    const user = getCurrentUser();
-    const rank = currentRoleRank();
-    const canSchedule = rank >= ROLE_RANK.scheduler;
-    const isAdmin = rank >= ROLE_RANK.admin;
-
-    const chip = document.getElementById('currentUserChip');
-    if(user){
-      chip.style.display = 'flex';
-      document.getElementById('currentUserName').textContent = user.name;
-      document.getElementById('currentUserRole').textContent = ROLE_LABELS[user.role] || user.role;
-    } else {
-      chip.style.display = 'none';
-    }
-
-    const setupTabBtn = document.querySelector('.tab-btn[data-tab="setup"]');
-    setupTabBtn.style.display = canSchedule ? '' : 'none';
-    if(!canSchedule && activeTab === 'setup') switchTab('schedule');
-
-    document.querySelectorAll('.admin-gated').forEach(panel => panel.classList.toggle('admin-unlocked', isAdmin));
-    document.querySelectorAll('.scheduler-gated-btn').forEach(btn => btn.style.display = canSchedule ? '' : 'none');
-    document.body.classList.toggle('is-view-only-role', !canSchedule);
-    ['schedule','rotations','staffing'].forEach(t => {
-      const note = document.getElementById('viewOnlyNote-' + t);
-      if(note) note.style.display = canSchedule ? 'none' : 'block';
+  document.querySelectorAll('.admin-lock-btn-inline').forEach(btn => {
+    btn.addEventListener('click', () => {
+      localStorage.removeItem(ADMIN_UNLOCK_KEY);
+      applyAdminUnlockUI();
+      showFlash('Admin settings locked again on this browser.');
     });
-  }
+  });
+  applyAdminUnlockUI();
 
   // ---------------- optional: live multi-user sync (Firebase Realtime Database) ----------------
   // This app normally saves to Claude.ai's storage, or to this one browser's
@@ -1361,16 +1281,6 @@
     rotationLength: 15, // minutes per rotation slot, 5-60
     gymName: '',
     location: '',
-    // Demo team covering all four access levels — rename/re-PIN these (or add
-    // your own) under Setup → Team & Access. Roles, least to most access:
-    // viewer (read-only) < coach (read-only + own roster) < scheduler
-    // (day-to-day editing) < admin (everything, incl. this panel).
-    users: [
-      {id:'usr_admin', name:'Ashley (Admin)', role:'admin', pin:'1234'},
-      {id:'usr_sched', name:'Jasmine (Scheduler)', role:'scheduler', pin:'2345'},
-      {id:'usr_coach', name:'Sam (Coach)', role:'coach', pin:'3456'},
-      {id:'usr_view', name:'Front Desk (Viewer)', role:'viewer', pin:'4567'},
-    ],
   };
 
   let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -1455,12 +1365,6 @@
     });
     if(!Array.isArray(state.conflicts)) state.conflicts = [];
     if(!Array.isArray(state.squadExclusions)) state.squadExclusions = [];
-    // Existing rosters saved before Team & Access existed get the demo team
-    // seeded in (rather than locking everyone out with an empty team list).
-    if(!Array.isArray(state.users) || state.users.length === 0){
-      state.users = JSON.parse(JSON.stringify(DEFAULT_STATE.users));
-    }
-    state.users.forEach(u => { if(!u.role || !ROLE_RANK.hasOwnProperty(u.role)) u.role = 'coach'; });
   }
 
   document.getElementById('rosterSelect').addEventListener('change', (e) => {
@@ -1597,7 +1501,6 @@
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}-${pad(d.getMinutes())}`;
   }
   document.getElementById('exportBtn').addEventListener('click', () => {
-    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Export is only available to Schedulers and Admins.'); return; }
     const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1608,13 +1511,11 @@
     URL.revokeObjectURL(url);
   });
   document.getElementById('importBtn').addEventListener('click', () => {
-    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); return; }
     document.getElementById('importFile').click();
   });
   document.getElementById('importFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(!file) return;
-    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); e.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => {
       try{
@@ -1951,83 +1852,6 @@
   }
   document.getElementById('addCoachBtn').addEventListener('click', () => {
     state.coaches.push({id: uid('co'), name:'New Coach', levelId: state.coachLevels[0].id, maxConcurrent: 1});
-    commit();
-  });
-
-  // ===================== SETUP: Team & Access =====================
-  const ROLE_OPTIONS = [
-    ['admin', 'Admin — full control'],
-    ['scheduler', 'Scheduler — day-to-day editing'],
-    ['coach', 'Coach — view only'],
-    ['viewer', 'Viewer — view only'],
-  ];
-  function renderUserList(){
-    const el = document.getElementById('userList');
-    if(!el) return;
-    el.innerHTML = '';
-    if(!state.users || state.users.length === 0){ el.innerHTML = '<p class="empty-note">No team members yet — add one below.</p>'; return; }
-    state.users.forEach(u => {
-      const row = document.createElement('div');
-      row.className = 'item-row';
-
-      const nameInput = document.createElement('input');
-      nameInput.className = 'name-input'; nameInput.value = u.name;
-      nameInput.addEventListener('change', () => { u.name = nameInput.value || u.name; commit(); });
-      row.appendChild(nameInput);
-
-      const roleWrap = document.createElement('label');
-      roleWrap.style.display = 'flex'; roleWrap.style.alignItems = 'center'; roleWrap.style.gap = '6px';
-      roleWrap.style.fontFamily = "'JetBrains Mono',monospace"; roleWrap.style.fontSize = '11px'; roleWrap.style.color = 'var(--slate)';
-      roleWrap.appendChild(document.createTextNode('access level'));
-      const roleSelect = document.createElement('select');
-      roleSelect.className = 'role-select';
-      ROLE_OPTIONS.forEach(([val, label]) => {
-        const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
-        if(u.role === val) opt.selected = true;
-        roleSelect.appendChild(opt);
-      });
-      roleSelect.addEventListener('change', () => {
-        const demotingSelf = (u.id === currentUserId && roleSelect.value !== 'admin');
-        if(demotingSelf && !window.confirm('This removes your own Admin access for this browser session. Continue?')){
-          roleSelect.value = u.role; return;
-        }
-        u.role = roleSelect.value; commit();
-      });
-      roleWrap.appendChild(roleSelect);
-      row.appendChild(roleWrap);
-
-      const pinWrap = document.createElement('label');
-      pinWrap.style.display = 'flex'; pinWrap.style.alignItems = 'center'; pinWrap.style.gap = '6px';
-      pinWrap.style.fontFamily = "'JetBrains Mono',monospace"; pinWrap.style.fontSize = '11px'; pinWrap.style.color = 'var(--slate)';
-      pinWrap.appendChild(document.createTextNode('PIN'));
-      const pinInput = document.createElement('input');
-      pinInput.className = 'pin-input'; pinInput.value = u.pin || ''; pinInput.placeholder = 'e.g. 1234';
-      pinInput.addEventListener('change', () => { u.pin = pinInput.value; commit(); });
-      pinWrap.appendChild(pinInput);
-      row.appendChild(pinWrap);
-
-      if(u.id === currentUserId){
-        const youTag = document.createElement('span');
-        youTag.className = 'user-gate-role-tag'; youTag.textContent = 'YOU';
-        row.appendChild(youTag);
-      }
-
-      const rm = document.createElement('button');
-      rm.className = 'remove-btn'; rm.textContent = 'Remove';
-      rm.addEventListener('click', () => {
-        if(u.id === currentUserId){ showFlash("You can't remove your own account while signed in — switch users first."); return; }
-        if(u.role === 'admin' && state.users.filter(x => x.role === 'admin').length <= 1){ showFlash('Keep at least one Admin on the team.'); return; }
-        state.users = state.users.filter(x => x.id !== u.id);
-        commit();
-      });
-      row.appendChild(rm);
-
-      el.appendChild(row);
-    });
-  }
-  const addUserBtn = document.getElementById('addUserBtn');
-  if(addUserBtn) addUserBtn.addEventListener('click', () => {
-    state.users.push({id: uid('usr'), name: 'New Team Member', role: 'coach', pin: String(Math.floor(1000 + Math.random()*9000))});
     commit();
   });
 
@@ -3076,6 +2900,326 @@
     });
   });
 
+  // ===================== LESSON PLANS =====================
+  // Builds real, standalone .docx files entirely client-side (no server) using
+  // a hand-written minimal OOXML structure + JSZip, so this stays a single
+  // HTML file with no build step. Loaded lazily so people who never use this
+  // tab don't pay for it.
+  //
+  // Colors/layout below are pulled directly from the club's own uploaded
+  // template (grey section bars 808080, light grey table headers BFBFBF,
+  // green field labels 008000, pale-green "coach position" cell C2D69B) so
+  // generated documents match its look rather than a generic default.
+  let jsZipReady = false;
+  async function ensureJSZip(){
+    if(jsZipReady && typeof JSZip !== 'undefined') return true;
+    try{
+      await loadScriptTag('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+      jsZipReady = true;
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  const LP_PAGE_CONTENT_WIDTH = 9639; // twips, matches A4 minus the template's margins
+  const LP_BANNER_PX = {w: 1091, h: 91};
+  // The club's own banner image, extracted from the uploaded template, embedded
+  // here so every generated lesson plan carries the same header graphic.
+  const LP_BANNER_IMG_B64 = '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';
+
+  function xmlEscape(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  }
+  function docxRun(text, opts){
+    opts = opts || {};
+    let rPr = '';
+    if(opts.bold || opts.italic || opts.size || opts.color){
+      rPr = '<w:rPr>' +
+        (opts.bold ? '<w:b/>' : '') +
+        (opts.italic ? '<w:i/>' : '') +
+        (opts.size ? `<w:sz w:val="${opts.size}"/><w:szCs w:val="${opts.size}"/>` : '') +
+        (opts.color ? `<w:color w:val="${opts.color}"/>` : '') +
+        '</w:rPr>';
+    }
+    return `<w:r>${rPr}<w:t xml:space="preserve">${xmlEscape(text)}</w:t></w:r>`;
+  }
+  function docxParagraph(runsOrText, opts){
+    opts = opts || {};
+    const runs = Array.isArray(runsOrText) ? runsOrText : [docxRun(runsOrText, opts)];
+    let spacing = '';
+    if(opts.spacingBefore !== undefined || opts.spacingAfter !== undefined){
+      spacing = `<w:spacing${opts.spacingBefore !== undefined ? ` w:before="${opts.spacingBefore}"` : ''}${opts.spacingAfter !== undefined ? ` w:after="${opts.spacingAfter}"` : ''}/>`;
+    }
+    const pPr = spacing ? `<w:pPr>${spacing}</w:pPr>` : '';
+    return `<w:p>${pPr}${runs.join('')}</w:p>`;
+  }
+  function docxImageParagraph(relId, widthEmu, heightEmu){
+    return '<w:p><w:r><w:drawing>' +
+      `<wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
+      `<wp:extent cx="${widthEmu}" cy="${heightEmu}"/>` +
+      `<wp:effectExtent l="0" t="0" r="0" b="0"/>` +
+      `<wp:docPr id="1" name="Banner"/>` +
+      `<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
+      `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+      `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+      `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+      `<pic:nvPicPr><pic:cNvPr id="0" name="Banner"/><pic:cNvPicPr/></pic:nvPicPr>` +
+      `<pic:blipFill><a:blip r:embed="${relId}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+      `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${widthEmu}" cy="${heightEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+      `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+  }
+  function docxTableCell(content, opts){
+    opts = opts || {};
+    const tcW = `<w:tcW w:w="${opts.width || 0}" w:type="${opts.width ? 'dxa' : 'auto'}"/>`;
+    const shd = opts.shade ? `<w:shd w:val="clear" w:fill="${opts.shade}"/>` : '';
+    const tcPr = `<w:tcPr>${tcW}${shd}<w:vAlign w:val="center"/></w:tcPr>`;
+    const para = typeof content === 'string' ? docxParagraph(content, opts) : content;
+    return `<w:tc>${tcPr}${para}</w:tc>`;
+  }
+  function docxTableRow(cells){ return `<w:tr>${cells.join('')}</w:tr>`; }
+  function docxTable(rows, colWidths){
+    const totalWidth = colWidths.reduce((a, b) => a + b, 0);
+    const gridCols = colWidths.map(w => `<w:gridCol w:w="${w}"/>`).join('');
+    const tblPr = '<w:tblPr>' +
+      `<w:tblW w:w="${totalWidth}" w:type="dxa"/>` +
+      '<w:tblBorders>' + ['top','left','bottom','right','insideH','insideV']
+        .map(edge => `<w:${edge} w:val="single" w:sz="4" w:space="0" w:color="999999"/>`).join('') +
+      '</w:tblBorders></w:tblPr>';
+    return `<w:tbl>${tblPr}<w:tblGrid>${gridCols}</w:tblGrid>${rows.join('')}</w:tbl>`;
+  }
+  // A full-width single-cell "bar" row — this is how the template's own
+  // "Circuit 1 – Rings – 15mins" style headings are actually built.
+  function docxSectionBar(text, shade, textColor){
+    return docxTable([
+      docxTableRow([docxTableCell(text, {shade, bold: true, color: textColor, width: LP_PAGE_CONTENT_WIDTH})])
+    ], [LP_PAGE_CONTENT_WIDTH]);
+  }
+
+  function buildLessonPlanDocumentXml(d){
+    const parts = [];
+    const bannerWidthEmu = 6120130;
+    const bannerHeightEmu = Math.round(bannerWidthEmu * LP_BANNER_PX.h / LP_BANNER_PX.w);
+    parts.push(docxImageParagraph('rIdBanner', bannerWidthEmu, bannerHeightEmu));
+    parts.push(docxParagraph(' ', {spacingAfter: 120}));
+
+    parts.push(docxParagraph([
+      docxRun('TERM: ', {bold: true, color: '008000'}), docxRun(d.termLabel + '   '),
+      docxRun('WEEK: ', {bold: true, color: '008000'}), docxRun(d.weekNum + '   '),
+      docxRun('DAY: ', {bold: true, color: '008000'}), docxRun(d.weekdayName + '   '),
+      docxRun('DATE: ', {bold: true, color: '008000'}), docxRun(d.dateStr + '   '),
+      docxRun('TIME: ', {bold: true, color: '008000'}), docxRun(d.startTime + ' to ' + d.endTime),
+    ]));
+    parts.push(docxParagraph([
+      docxRun('SQUAD: ', {bold: true, color: '008000'}), docxRun(d.squadName + '   '),
+      docxRun('LESSON LENGTH: ', {bold: true, color: '008000'}), docxRun(d.duration + ' min   '),
+      docxRun('COACH: ', {bold: true, color: '008000'}), docxRun(d.coachName + '   '),
+      docxRun('ASSISTANT COACH: ', {bold: true, color: '008000'}), docxRun(d.assistantName),
+    ]));
+    parts.push(docxParagraph([docxRun('Lesson Aim/Theme: ', {bold: true}), docxRun('_'.repeat(55))], {spacingAfter: 200}));
+
+    parts.push(docxSectionBar('Warm-up', '808080', 'FFFFFF'));
+    parts.push(docxTable([
+      docxTableRow([docxTableCell('Activity', {shade: 'BFBFBF', bold: true, width: LP_PAGE_CONTENT_WIDTH - 2000}), docxTableCell('Duration', {shade: 'BFBFBF', bold: true, width: 2000})]),
+      ...Array.from({length: 4}, () => docxTableRow([docxTableCell('', {width: LP_PAGE_CONTENT_WIDTH - 2000}), docxTableCell('', {width: 2000})]))
+    ], [LP_PAGE_CONTENT_WIDTH - 2000, 2000]));
+
+    if(d.circuits.length === 0){
+      parts.push(docxParagraph('No station rotations were found for this squad on this day in the Rotations tab — add them there and regenerate.', {italic: true, color: 'B5292E', spacingBefore: 240}));
+    } else {
+      const colW = Math.round(LP_PAGE_CONTENT_WIDTH / 4);
+      d.circuits.forEach((c, i) => {
+        parts.push(docxParagraph(' ', {spacingBefore: 160}));
+        parts.push(docxSectionBar(`Circuit ${i + 1} — ${c.name} — ${c.duration} mins`, '808080', 'FFFFFF'));
+        const headerRow = docxTableRow(['Equipment', 'Skill', 'KCP', 'Safety'].map(h => docxTableCell(h, {shade: 'BFBFBF', bold: true, width: colW})));
+        // first data row's Equipment/Skill cells are tinted to flag the coach's
+        // starting position, matching the template's "Key: Coach position" cue
+        const firstRow = docxTableRow([
+          docxTableCell('', {shade: 'C2D69B', width: colW}),
+          docxTableCell('', {shade: 'C2D69B', width: colW}),
+          docxTableCell('', {width: colW}),
+          docxTableCell('', {width: colW}),
+        ]);
+        const restRows = Array.from({length: 4}, () => docxTableRow(['', '', '', ''].map(() => docxTableCell('', {width: colW}))));
+        parts.push(docxTable([headerRow, firstRow, ...restRows], [colW, colW, colW, colW]));
+      });
+    }
+
+    parts.push(docxParagraph(' ', {spacingBefore: 160}));
+    parts.push(docxSectionBar('Warm Down', '808080', 'FFFFFF'));
+    parts.push(docxTable([
+      docxTableRow([docxTableCell('Notes', {shade: 'BFBFBF', bold: true, width: LP_PAGE_CONTENT_WIDTH})]),
+      docxTableRow([docxTableCell('', {width: LP_PAGE_CONTENT_WIDTH})]),
+    ], [LP_PAGE_CONTENT_WIDTH]));
+
+    parts.push(docxParagraph(' ', {spacingBefore: 120}));
+    parts.push(docxSectionBar('Key: Coach position', 'C2D69B', '404040'));
+
+    const sectPr = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>';
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+      '<w:body>' + parts.join('') + sectPr + '</w:body></w:document>';
+  }
+
+  async function createMinimalDocxBlob(documentXml){
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Default Extension="jpeg" ContentType="image/jpeg"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '</Types>');
+    zip.file('_rels/.rels',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '</Relationships>');
+    zip.file('word/document.xml', documentXml);
+    zip.file('word/_rels/document.xml.rels',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rIdBanner" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/banner.jpeg"/>' +
+      '</Relationships>');
+    zip.file('word/media/banner.jpeg', LP_BANNER_IMG_B64, {base64: true});
+    return zip.generateAsync({type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  }
+
+  // Consolidates consecutive same-station ticks into one "circuit" block per
+  // squad per day, e.g. 15 min Floor -> 15 min Rings -> 15 min Vault.
+  function getSquadCircuitsForDay(squadId, dayIndex){
+    const weekday = weekdayOf(dayIndex);
+    const sessions = ((state.schedule[squadId] || {})[weekday]) || [];
+    if(sessions.length === 0) return [];
+    let min = null, max = null;
+    sessions.forEach(session => {
+      const {startTick, endTick} = sessionTicks(session);
+      if(min === null || startTick < min) min = startTick;
+      if(max === null || endTick > max) max = endTick;
+    });
+    if(min === null) return [];
+    const blocks = [];
+    let current = null;
+    for(let tick = min; tick < max; tick++){
+      if(!squadInSessionAtTick(squadId, dayIndex, tick)){ current = null; continue; }
+      const stationId = getAlloc(dayIndex, tick, squadId);
+      if(current && current.stationId === stationId){
+        current.ticks++;
+      } else {
+        current = {stationId, ticks: 1};
+        blocks.push(current);
+      }
+    }
+    return blocks.map(b => ({
+      name: b.stationId ? ((state.stations.find(s => s.id === b.stationId) || {}).name || 'Open') : 'Open',
+      duration: b.ticks * state.rotationLength
+    }));
+  }
+
+  const LP_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function stripTime(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function appWeekdayOfDate(d){ return (d.getDay() + 6) % 7; } // JS: 0=Sun..6=Sat -> app: 0=Mon..6=Sun
+  function computeCycleDayIndex(d, anchorMonday){
+    const diffDays = Math.round((stripTime(d) - stripTime(anchorMonday)) / 86400000);
+    return ((diffDays % 14) + 14) % 14;
+  }
+  function computeTermWeekNumber(d, fromDate){
+    const diffDays = Math.round((stripTime(d) - stripTime(fromDate)) / 86400000);
+    return Math.floor(diffDays / 7) + 1;
+  }
+  function formatDateForHeader(d){ return `${LP_MONTH_NAMES[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
+  function formatDateForFilename(d){ return `${LP_MONTH_NAMES[d.getMonth()]} ${d.getDate()}`; }
+
+  let lpHiddenSquads = new Set();
+  function renderLessonPlansFilter(){
+    renderSquadFilter('lpSquadFilter', lpHiddenSquads, renderLessonPlansFilter);
+  }
+
+  document.getElementById('lpGenerateBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('lpStatus');
+    const termLabel = document.getElementById('lpTermLabel').value.trim() || 'Term';
+    const fromStr = document.getElementById('lpFromDate').value;
+    const toStr = document.getElementById('lpToDate').value;
+    const anchorStr = document.getElementById('lpAnchorMonday').value;
+
+    if(!fromStr || !toStr){ statusEl.textContent = 'Pick a From and To date first.'; return; }
+    const fromDate = new Date(fromStr + 'T00:00:00');
+    const toDate = new Date(toStr + 'T00:00:00');
+    if(toDate < fromDate){ statusEl.textContent = 'The "To" date is before the "From" date.'; return; }
+
+    let anchorMonday = anchorStr ? new Date(anchorStr + 'T00:00:00') : null;
+    if(!anchorMonday){
+      anchorMonday = new Date(fromDate);
+      anchorMonday.setDate(anchorMonday.getDate() - appWeekdayOfDate(fromDate));
+    }
+
+    const includedSquads = state.squads.filter(s => !lpHiddenSquads.has(s.id));
+    if(includedSquads.length === 0){ statusEl.textContent = 'Select at least one squad below.'; return; }
+
+    statusEl.textContent = 'Loading zip library…';
+    const zipOk = await ensureJSZip();
+    if(!zipOk){ statusEl.textContent = 'Could not load the zip library — check your connection and try again.'; return; }
+
+    const zip = new JSZip();
+    let count = 0;
+    const gymTitle = 'Gym Org Pro' + (state.gymName ? ' - ' + state.gymName : '');
+
+    for(let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)){
+      const weekday = appWeekdayOfDate(d);
+      for(const squad of includedSquads){
+        const sessions = ((state.schedule[squad.id] || {})[weekday]) || [];
+        if(sessions.length === 0) continue;
+        const dayIndex = computeCycleDayIndex(d, anchorMonday);
+        const circuits = getSquadCircuitsForDay(squad.id, dayIndex);
+        const weekNum = computeTermWeekNumber(d, fromDate);
+
+        for(const session of sessions){
+          statusEl.textContent = `Building document ${count + 1}…`;
+          const startMin = toMinutes(session.startTime);
+          const endMin = startMin + session.duration;
+          const coach = state.coaches.find(c => c.id === session.coachId);
+          const asst = state.coaches.find(c => c.id === session.assistantCoachId);
+
+          const xml = buildLessonPlanDocumentXml({
+            gymTitle, termLabel, weekNum,
+            weekdayName: DAY_NAMES_FULL[weekday],
+            dateStr: formatDateForHeader(d),
+            startTime: fmt12(startMin), endTime: fmt12(endMin),
+            squadName: squad.name, duration: session.duration,
+            coachName: coach ? coach.name : 'UNASSIGNED',
+            assistantName: asst ? asst.name : '—',
+            circuits
+          });
+          const docBlob = await createMinimalDocxBlob(xml);
+
+          const folderName = sanitizeFilenamePart(`${squad.name} ${DAY_NAMES_FULL[weekday]}`);
+          const fileName = sanitizeFilenamePart(
+            `${d.getFullYear()} ${squad.name} ${termLabel} Week ${weekNum} ${formatDateForFilename(d)} ${DAY_NAMES_FULL[weekday]} ${fmt12(startMin)} to ${fmt12(endMin)}`
+          ) + '.docx';
+          zip.folder(folderName).file(fileName, docBlob);
+          count++;
+        }
+      }
+    }
+
+    if(count === 0){
+      statusEl.textContent = 'No sessions found for the selected squads in that date range.';
+      return;
+    }
+    statusEl.textContent = `Packaging ${count} document(s)…`;
+    const outBlob = await zip.generateAsync({type: 'blob'});
+    const url = URL.createObjectURL(outBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = sanitizeFilenamePart(`Lesson Plans - ${termLabel} - ${fromStr} to ${toStr}`) + '.zip';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusEl.textContent = `Done — ${count} lesson plan(s) generated in your downloads.`;
+  });
+
   // ===================== STAFFING =====================
   let staffingViewMode = 'daily'; // 'daily' = weekly roster grouped by day, 'individual' = per-coach rosters
   let staffingSelectedDay = null; // null = show every day; otherwise a single weekday (0-6)
@@ -3379,9 +3523,6 @@
 
   // ===================== master render =====================
   function renderAll(){
-    ensureUserSession();
-    applyRoleUI();
-    renderUserList();
     updateMainTitle();
     document.getElementById('rotationLengthInput').value = state.rotationLength;
     ['rlLabel1','rlLabel2','rlLabel3'].forEach(id => {
@@ -3404,6 +3545,7 @@
     renderCoachLoad();
     applyStaffingView();
     renderOverview();
+    renderLessonPlansFilter();
   }
 
   switchTab('setup');
