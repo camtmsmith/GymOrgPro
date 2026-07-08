@@ -48,22 +48,16 @@
   .roster-row-btn.danger:hover{background:#FBEAEA;}
   .roster-manage-show-hidden{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);cursor:pointer;}
 
+  /* ---- lesson plans ---- */
+  .lp-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:6px;}
+  .lp-field{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);}
+  .lp-field input{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);}
+
   /* ---- simple RBAC: admin-only panels ---- */
   .admin-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.05em;background:var(--gold-soft);color:#8A6D10;border-radius:100px;padding:3px 8px;margin-left:8px;vertical-align:middle;text-transform:uppercase;}
   .admin-real-content{display:none;}
   .panel.admin-gated.admin-unlocked .admin-locked-content{display:none;}
   .panel.admin-gated.admin-unlocked .admin-real-content{display:block;}
-  .admin-unlock-form{display:flex;gap:8px;align-items:center;margin-top:12px;max-width:320px;}
-  .admin-unlock-input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;}
-  .admin-unlock-btn{padding:8px 14px;font-size:11px;}
-  .admin-unlock-error{color:var(--mat-red);font-size:12px;margin:10px 0 0;}
-  .admin-lock-btn-inline{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;background:var(--chalk);border:1px solid var(--line);border-radius:100px;padding:4px 10px;cursor:pointer;color:var(--slate);vertical-align:middle;margin-left:4px;}
-  .admin-lock-btn-inline:hover{border-color:var(--ink);color:var(--ink);}
-
-  /* ---- lesson plans ---- */
-  .lp-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:6px;}
-  .lp-field{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);}
-  .lp-field input{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);}
 
   /* ---- shared-password access gate ---- */
   .access-gate{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,var(--ink) 0%,var(--ink-2) 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -74,6 +68,26 @@
   .access-gate-card input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;margin-bottom:12px;box-sizing:border-box;}
   .access-gate-card .header-btn{width:100%;padding:10px;font-size:12px;}
   .access-gate-error{color:var(--mat-red);font-size:12px;margin:12px 0 0;}
+
+  /* ---- per-person sign-in (name + PIN) and role-based access ---- */
+  .user-gate-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px;text-align:left;}
+  .user-gate-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--chalk);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--ink);}
+  .user-gate-btn:hover{border-color:var(--ink);}
+  .user-gate-btn.selected{border-color:var(--gold);background:var(--gold-soft);}
+  .user-gate-role-tag{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);background:var(--panel);border:1px solid var(--line);border-radius:100px;padding:3px 8px;white-space:nowrap;}
+  .current-user-chip{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:6px 12px;color:#fff;white-space:nowrap;}
+  .current-user-chip strong{font-family:'Inter',sans-serif;}
+  .current-user-chip .role-tag{background:var(--gold);color:var(--ink);border-radius:100px;padding:2px 8px;font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.04em;}
+  .view-only-note{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.02em;background:var(--gold-soft);color:#8A6D10;border:1px solid #E9DCA8;border-radius:8px;padding:9px 12px;margin-bottom:14px;}
+  .role-select{padding:5px;border:1px solid var(--line);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .pin-input{width:74px;padding:5px;border:1px solid var(--line);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  /* view-only roles (Coach / Viewer) can look at the live grids but not edit them */
+  body.is-view-only-role #scheduleList,
+  body.is-view-only-role #rotaBoard,
+  body.is-view-only-role #rotaBySquadBoard,
+  body.is-view-only-role #rosterTable,
+  body.is-view-only-role #coachRosterTable,
+  body.is-view-only-role #coachLoadTable { pointer-events:none; opacity:.85; }
   .status-chip{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:100px;padding:6px 14px;display:flex;align-items:center;gap:8px;white-space:nowrap;}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--spring);}
   .header-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.03em;background:var(--gold);color:var(--ink);border:none;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:700;}
@@ -286,11 +300,31 @@
   </div>
 </div>
 
+<!-- Second, lighter-weight layer: once past the shared password above, each
+     person identifies themselves so the app knows their access level. This
+     is a prototype-grade lock (same caveat as the shared password — it's all
+     in this file's plain-text source), not real authentication. -->
+<div class="access-gate" id="userGate">
+  <div class="access-gate-card">
+    <p class="access-gate-title">Who's this?</p>
+    <p class="access-gate-desc">Pick your name and enter your PIN. An Admin can add you and set your access level under Setup → Team &amp; Access.</p>
+    <div class="user-gate-list" id="userGateList"></div>
+    <input type="password" id="userGatePin" placeholder="PIN" autocomplete="off" style="display:none;">
+    <button type="button" class="header-btn" id="userGateSubmit" style="display:none;">Sign In</button>
+    <p class="access-gate-error" id="userGateError" style="display:none;">Incorrect PIN — try again.</p>
+  </div>
+</div>
+
 <div class="top-bar">
 <div class="board-header">
   <div class="board-header-inner">
     <p class="header-title-line"><span id="mainTitle">Gym Org Pro</span><span class="version" id="versionTag">· v1.0</span></p>
     <span class="shared-badge" id="sharedBadge" style="display:none;" title="Everyone who opens this link sees and can edit the same schedule.">⚠ SHARED — visible to anyone with this link</span>
+    <div class="current-user-chip" id="currentUserChip" style="display:none;">
+      <span>Signed in: <strong id="currentUserName"></strong></span>
+      <span class="role-tag" id="currentUserRole"></span>
+      <button type="button" class="header-btn ghost" id="switchUserBtn">Switch</button>
+    </div>
     <div class="roster-switch" id="rosterSwitch" style="display:none;">
       <label for="rosterSelect">Roster</label>
       <select id="rosterSelect"></select>
@@ -330,8 +364,8 @@
           <button type="button" id="printIndividualBtn">Individual Coach Rosters</button>
         </div>
       </div>
-      <button class="header-btn" id="exportBtn">EXPORT BACKUP</button>
-      <button class="header-btn ghost" id="importBtn">IMPORT BACKUP</button>
+      <button class="header-btn scheduler-gated-btn" id="exportBtn">EXPORT BACKUP</button>
+      <button class="header-btn ghost scheduler-gated-btn" id="importBtn">IMPORT BACKUP</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -345,6 +379,7 @@
     <div class="setup-subnav" id="setupSubnav">
       <button type="button" class="subnav-btn" data-target="panel-program-details">Program Details</button>
       <button type="button" class="subnav-btn" data-target="panel-rotation-settings">Rotation Settings</button>
+      <button type="button" class="subnav-btn" data-target="panel-team-access">Team &amp; Access</button>
       <button type="button" class="subnav-btn" data-target="panel-coaching-levels">Coaching Levels</button>
       <button type="button" class="subnav-btn" data-target="panel-squads">Squads</button>
       <button type="button" class="subnav-btn" data-target="panel-stations">Gym Stations</button>
@@ -356,15 +391,10 @@
     <div class="panel admin-gated" id="panel-program-details">
       <div class="admin-locked-content">
         <p class="panel-title">🔒 Program Details <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">This section is restricted to admin users. Enter the admin password to unlock it.</p>
-        <div class="admin-unlock-form">
-          <input type="password" class="admin-unlock-input" placeholder="Admin password" autocomplete="off">
-          <button type="button" class="header-btn admin-unlock-btn">Unlock</button>
-        </div>
-        <p class="admin-unlock-error" style="display:none;">Incorrect password.</p>
+        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin (see Team &amp; Access below) to unlock it.</p>
       </div>
       <div class="admin-real-content">
-        <p class="panel-title">Program Details <span class="admin-badge">ADMIN ONLY</span> <button type="button" class="admin-lock-btn-inline">🔒 Lock</button></p>
+        <p class="panel-title">Program Details <span class="admin-badge">ADMIN ONLY</span></p>
         <p class="panel-desc">Shown in the header as "Gym Org Pro - {Gym Name} - {Location}". Leave either blank to omit it.</p>
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
           <label style="display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);">
@@ -382,21 +412,30 @@
     <div class="panel admin-gated" id="panel-rotation-settings">
       <div class="admin-locked-content">
         <p class="panel-title">🔒 Rotation Settings <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">This section is restricted to admin users. Enter the admin password to unlock it.</p>
-        <div class="admin-unlock-form">
-          <input type="password" class="admin-unlock-input" placeholder="Admin password" autocomplete="off">
-          <button type="button" class="header-btn admin-unlock-btn">Unlock</button>
-        </div>
-        <p class="admin-unlock-error" style="display:none;">Incorrect password.</p>
+        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin (see Team &amp; Access below) to unlock it.</p>
       </div>
       <div class="admin-real-content">
-        <p class="panel-title">Rotation Settings <span class="admin-badge">ADMIN ONLY</span> <button type="button" class="admin-lock-btn-inline">🔒 Lock</button></p>
+        <p class="panel-title">Rotation Settings <span class="admin-badge">ADMIN ONLY</span></p>
         <p class="panel-desc">How long each rotation slot lasts. All session durations round to the nearest multiple of this value. Existing station picks carry over automatically: <strong>shrinking</strong> this value is lossless (each pick fills the new, smaller slots it spans), while <strong>growing</strong> it combines multiple slots into one and keeps only the earliest pick where they conflict.</p>
         <label style="display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--slate);">
           Rotation length
           <input type="number" id="rotationLengthInput" min="5" max="60" step="1" style="width:64px;padding:7px;border:1px solid var(--line);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;">
           minutes (5–60)
         </label>
+      </div>
+    </div>
+
+    <div class="panel admin-gated" id="panel-team-access">
+      <div class="admin-locked-content">
+        <p class="panel-title">🔒 Team &amp; Access <span class="admin-badge">ADMIN ONLY</span></p>
+        <p class="panel-desc">This section is restricted to Admin access. Sign in as an Admin to unlock it.</p>
+      </div>
+      <div class="admin-real-content">
+        <p class="panel-title">Team &amp; Access <span class="admin-badge">ADMIN ONLY</span></p>
+        <p class="panel-desc">Add everyone who needs to open this schedule and set what they can do — the principle is to give each person the least access that still lets them do their job. <strong>Admin</strong>: full control, including this panel, Program Details and Rotation Settings. <strong>Scheduler</strong>: day-to-day editing — Training Schedule, Rotations, Staffing, plus Squads/Stations/Coaches/Conflicts/Capacity — but not the settings above. <strong>Coach</strong>: can view every tab, including their own roster, but can't change anything. <strong>Viewer</strong>: read-only — good for a front-desk screen or a link shared with parents.</p>
+        <div id="userList"></div>
+        <button class="add-btn" id="addUserBtn">+ ADD TEAM MEMBER</button>
+        <p class="hint" style="margin-top:10px;">Each person signs in once per browser with their name and PIN (below the shared password). Like the shared password, this is a lightweight, prototype-level lock — the PINs live in this file's data, not a real authentication system. For a production rollout, swap this for proper authentication (e.g. Firebase Authentication) tied to the same roles.</p>
       </div>
     </div>
 
@@ -446,6 +485,7 @@
 
   <!-- ===================== TRAINING SCHEDULE ===================== -->
   <div class="tab-panel" id="tab-schedule">
+    <p class="view-only-note" id="viewOnlyNote-schedule" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Session Times &amp; Coaches</p>
       <p class="panel-desc">Toggle the days each squad trains. Each day can have more than one session — e.g. a Morning and an Afternoon session — each with its own time, duration (in <span id="rlLabel1">15</span>-minute increments), and coach. This repeats the same every week; only the station rotations (next tab) vary across the two-week cycle.</p>
@@ -461,6 +501,7 @@
 
   <!-- ===================== ROTATIONS ===================== -->
   <div class="tab-panel" id="tab-rotations">
+    <p class="view-only-note" id="viewOnlyNote-rotations" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Rotation View</p>
       <p class="panel-desc">View one day with every squad's rotations side by side, or one squad's full two-week cycle at a glance.</p>
@@ -502,6 +543,7 @@
 
   <!-- ===================== STAFFING ===================== -->
   <div class="tab-panel" id="tab-staffing">
+    <p class="view-only-note" id="viewOnlyNote-staffing" style="display:none;">👁 View only for your access level — sign in as a Scheduler or Admin to make changes.</p>
     <div class="panel">
       <p class="panel-title">Staffing View</p>
       <p class="panel-desc">Switch between the daily roster (every session, grouped by day) and each coach's individual weekly roster.</p>
@@ -542,7 +584,7 @@
   <div class="tab-panel" id="tab-lessonplans">
     <div class="panel">
       <p class="panel-title">Generate Lesson Plans</p>
-      <p class="panel-desc">Produces one Word document per session in the date range below, organized into folders by squad and day (matching each session's actual time). Each document's header, coach details, and circuit list (station + duration) are filled in automatically from Training Schedule and Rotations. The Skill/KCP/Safety and warm-up/warm-down details are left blank for coaches to fill in themselves.</p>
+      <p class="panel-desc">Produces one Word document per session in the date range below, all named clearly (squad, term, week, date, day, time) and packaged flat in a single zip — no subfolders to dig through. Each document's header, coach details, and circuit list (station + duration) are filled in automatically from Training Schedule and Rotations, styled to match the club's own lesson plan template. The Skill/KCP/Safety and warm-up/warm-down details are left blank for coaches to fill in themselves.</p>
 
       <div class="lp-form-grid">
         <label class="lp-field">
@@ -583,7 +625,7 @@
   const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const PALETTE = ['#B5292E','#1F7A5C','#C9A227','#2A5CAA','#7A4FA3','#B5602E','#3E8E8E','#8C3F63','#4B7B2A','#A6437A'];
   const STORAGE_KEY = 'gym-scheduler-state-v4';
-  const APP_VERSION = 'v2.4.1';
+  const APP_VERSION = 'v3.1';
   document.getElementById('versionTag').textContent = ' - ' + APP_VERSION.toUpperCase();
 
   // ---------------- shared-password access gate ----------------
@@ -618,47 +660,125 @@
   });
   checkAccessGate();
 
-  // ---------------- simple RBAC: admin-only panels ----------------
+  // ---------------- RBAC: roles, sign-in, and access rules ----------------
   // Same "soft deterrent" caveat as the access gate above — this is a UI-level
-  // lock, not real access control. It hides Program Details and Rotation
-  // Settings behind a second password so casual/non-admin users don't stumble
-  // into the most destructive settings, but it doesn't stop someone who reads
-  // the page source. Change ADMIN_PASSWORD below to your own value.
-  const ADMIN_PASSWORD = 'GymOrgProAdmin';
-  const ADMIN_UNLOCK_KEY = 'gym-scheduler-admin-unlocked';
+  // lock, not real access control; the data (including PINs) lives in this
+  // file's plain-text source/state. It's meant to give each person the right
+  // *shape* of access, not to withstand someone reading the page source. For
+  // a production rollout, swap this for real authentication (e.g. Firebase
+  // Authentication) mapped onto the same four roles.
+  const ROLE_RANK = {viewer:0, coach:1, scheduler:2, admin:3};
+  const ROLE_LABELS = {admin:'Admin', scheduler:'Scheduler', coach:'Coach', viewer:'Viewer'};
+  let currentUserId = null;      // set once someone picks their name + PIN below
+  let pendingGateUserId = null;  // name picked in the sign-in gate, awaiting PIN
 
-  function applyAdminUnlockUI(){
-    const unlocked = localStorage.getItem(ADMIN_UNLOCK_KEY) === 'true';
-    document.querySelectorAll('.admin-gated').forEach(panel => {
-      panel.classList.toggle('admin-unlocked', unlocked);
+  function currentSessionKey(){ return 'gym-scheduler-current-user::' + currentRosterId; }
+  function getCurrentUser(){ return (state.users || []).find(u => u.id === currentUserId) || null; }
+  function currentRoleRank(){ const u = getCurrentUser(); return u ? (ROLE_RANK[u.role] ?? 0) : 0; }
+
+  // Called every render: restores a remembered sign-in for THIS roster if
+  // still valid, or opens the sign-in gate (per-roster, since a Scheduler on
+  // one roster/club might only be a Viewer on another).
+  function ensureUserSession(){
+    if(!currentUserId){
+      const stored = localStorage.getItem(currentSessionKey());
+      if(stored && (state.users || []).some(u => u.id === stored)) currentUserId = stored;
+    } else if(!(state.users || []).some(u => u.id === currentUserId)){
+      currentUserId = null; // signed-in person was removed from the team
+    }
+    const gate = document.getElementById('userGate');
+    if(currentUserId){
+      gate.classList.add('unlocked');
+    } else {
+      gate.classList.remove('unlocked');
+      renderUserGateList();
+    }
+  }
+  function renderUserGateList(){
+    const list = document.getElementById('userGateList');
+    list.innerHTML = '';
+    pendingGateUserId = null;
+    document.getElementById('userGatePin').style.display = 'none';
+    document.getElementById('userGateSubmit').style.display = 'none';
+    document.getElementById('userGateError').style.display = 'none';
+    if(!state.users || state.users.length === 0){
+      list.innerHTML = '<p class="empty-note">No team members set up yet — ask whoever set up this schedule to add you under Setup → Team &amp; Access.</p>';
+      return;
+    }
+    state.users.forEach(u => {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'user-gate-btn';
+      const nameEl = document.createElement('span'); nameEl.textContent = u.name;
+      const roleEl = document.createElement('span'); roleEl.className = 'user-gate-role-tag'; roleEl.textContent = ROLE_LABELS[u.role] || u.role;
+      btn.appendChild(nameEl); btn.appendChild(roleEl);
+      btn.addEventListener('click', () => selectGateUser(u.id, btn));
+      list.appendChild(btn);
     });
   }
-  document.querySelectorAll('.admin-gated').forEach(panel => {
-    const input = panel.querySelector('.admin-unlock-input');
-    const btn = panel.querySelector('.admin-unlock-btn');
-    const errorEl = panel.querySelector('.admin-unlock-error');
-    function attemptAdminUnlock(){
-      if(input.value === ADMIN_PASSWORD){
-        localStorage.setItem(ADMIN_UNLOCK_KEY, 'true');
-        applyAdminUnlockUI();
-        errorEl.style.display = 'none';
-      } else {
-        errorEl.style.display = 'block';
-        input.value = '';
-        input.focus();
-      }
+  function selectGateUser(id, btnEl){
+    pendingGateUserId = id;
+    document.querySelectorAll('#userGateList .user-gate-btn').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+    const pin = document.getElementById('userGatePin');
+    document.getElementById('userGateSubmit').style.display = '';
+    document.getElementById('userGateError').style.display = 'none';
+    pin.style.display = ''; pin.value = ''; pin.focus();
+  }
+  function attemptUserSignIn(){
+    const pinInput = document.getElementById('userGatePin');
+    const errorEl = document.getElementById('userGateError');
+    const user = (state.users || []).find(u => u.id === pendingGateUserId);
+    if(user && String(user.pin || '') === pinInput.value){
+      currentUserId = user.id;
+      localStorage.setItem(currentSessionKey(), user.id);
+      document.getElementById('userGate').classList.add('unlocked');
+      errorEl.style.display = 'none';
+      applyRoleUI();
+    } else {
+      errorEl.style.display = 'block';
+      pinInput.value = ''; pinInput.focus();
     }
-    btn.addEventListener('click', attemptAdminUnlock);
-    input.addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptAdminUnlock(); });
+  }
+  document.getElementById('userGateSubmit').addEventListener('click', attemptUserSignIn);
+  document.getElementById('userGatePin').addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptUserSignIn(); });
+  document.getElementById('switchUserBtn').addEventListener('click', () => {
+    localStorage.removeItem(currentSessionKey());
+    currentUserId = null;
+    document.getElementById('userGate').classList.remove('unlocked');
+    renderUserGateList();
   });
-  document.querySelectorAll('.admin-lock-btn-inline').forEach(btn => {
-    btn.addEventListener('click', () => {
-      localStorage.removeItem(ADMIN_UNLOCK_KEY);
-      applyAdminUnlockUI();
-      showFlash('Admin settings locked again on this browser.');
+
+  // Applies the signed-in person's role to the UI: which tabs/panels they can
+  // reach, and whether the live grids (schedule/rotations/staffing) are
+  // editable or view-only. Runs every render, so a role change (or someone
+  // else editing the team list) takes effect immediately.
+  function applyRoleUI(){
+    const user = getCurrentUser();
+    const rank = currentRoleRank();
+    const canSchedule = rank >= ROLE_RANK.scheduler;
+    const isAdmin = rank >= ROLE_RANK.admin;
+
+    const chip = document.getElementById('currentUserChip');
+    if(user){
+      chip.style.display = 'flex';
+      document.getElementById('currentUserName').textContent = user.name;
+      document.getElementById('currentUserRole').textContent = ROLE_LABELS[user.role] || user.role;
+    } else {
+      chip.style.display = 'none';
+    }
+
+    const setupTabBtn = document.querySelector('.tab-btn[data-tab="setup"]');
+    setupTabBtn.style.display = canSchedule ? '' : 'none';
+    if(!canSchedule && activeTab === 'setup') switchTab('schedule');
+
+    document.querySelectorAll('.admin-gated').forEach(panel => panel.classList.toggle('admin-unlocked', isAdmin));
+    document.querySelectorAll('.scheduler-gated-btn').forEach(btn => btn.style.display = canSchedule ? '' : 'none');
+    document.body.classList.toggle('is-view-only-role', !canSchedule);
+    ['schedule','rotations','staffing'].forEach(t => {
+      const note = document.getElementById('viewOnlyNote-' + t);
+      if(note) note.style.display = canSchedule ? 'none' : 'block';
     });
-  });
-  applyAdminUnlockUI();
+  }
 
   // ---------------- optional: live multi-user sync (Firebase Realtime Database) ----------------
   // This app normally saves to Claude.ai's storage, or to this one browser's
@@ -1281,6 +1401,16 @@
     rotationLength: 15, // minutes per rotation slot, 5-60
     gymName: '',
     location: '',
+    // Demo team covering all four access levels — rename/re-PIN these (or add
+    // your own) under Setup → Team & Access. Roles, least to most access:
+    // viewer (read-only) < coach (read-only + own roster) < scheduler
+    // (day-to-day editing) < admin (everything, incl. this panel).
+    users: [
+      {id:'usr_admin', name:'Ashley (Admin)', role:'admin', pin:'1234'},
+      {id:'usr_sched', name:'Jasmine (Scheduler)', role:'scheduler', pin:'2345'},
+      {id:'usr_coach', name:'Sam (Coach)', role:'coach', pin:'3456'},
+      {id:'usr_view', name:'Front Desk (Viewer)', role:'viewer', pin:'4567'},
+    ],
   };
 
   let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -1365,6 +1495,12 @@
     });
     if(!Array.isArray(state.conflicts)) state.conflicts = [];
     if(!Array.isArray(state.squadExclusions)) state.squadExclusions = [];
+    // Existing rosters saved before Team & Access existed get the demo team
+    // seeded in (rather than locking everyone out with an empty team list).
+    if(!Array.isArray(state.users) || state.users.length === 0){
+      state.users = JSON.parse(JSON.stringify(DEFAULT_STATE.users));
+    }
+    state.users.forEach(u => { if(!u.role || !ROLE_RANK.hasOwnProperty(u.role)) u.role = 'coach'; });
   }
 
   document.getElementById('rosterSelect').addEventListener('change', (e) => {
@@ -1501,6 +1637,7 @@
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}-${pad(d.getMinutes())}`;
   }
   document.getElementById('exportBtn').addEventListener('click', () => {
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Export is only available to Schedulers and Admins.'); return; }
     const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1511,11 +1648,13 @@
     URL.revokeObjectURL(url);
   });
   document.getElementById('importBtn').addEventListener('click', () => {
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); return; }
     document.getElementById('importFile').click();
   });
   document.getElementById('importFile').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(!file) return;
+    if(currentRoleRank() < ROLE_RANK.scheduler){ showFlash('Import is only available to Schedulers and Admins.'); e.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => {
       try{
@@ -1852,6 +1991,83 @@
   }
   document.getElementById('addCoachBtn').addEventListener('click', () => {
     state.coaches.push({id: uid('co'), name:'New Coach', levelId: state.coachLevels[0].id, maxConcurrent: 1});
+    commit();
+  });
+
+  // ===================== SETUP: Team & Access =====================
+  const ROLE_OPTIONS = [
+    ['admin', 'Admin — full control'],
+    ['scheduler', 'Scheduler — day-to-day editing'],
+    ['coach', 'Coach — view only'],
+    ['viewer', 'Viewer — view only'],
+  ];
+  function renderUserList(){
+    const el = document.getElementById('userList');
+    if(!el) return;
+    el.innerHTML = '';
+    if(!state.users || state.users.length === 0){ el.innerHTML = '<p class="empty-note">No team members yet — add one below.</p>'; return; }
+    state.users.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+
+      const nameInput = document.createElement('input');
+      nameInput.className = 'name-input'; nameInput.value = u.name;
+      nameInput.addEventListener('change', () => { u.name = nameInput.value || u.name; commit(); });
+      row.appendChild(nameInput);
+
+      const roleWrap = document.createElement('label');
+      roleWrap.style.display = 'flex'; roleWrap.style.alignItems = 'center'; roleWrap.style.gap = '6px';
+      roleWrap.style.fontFamily = "'JetBrains Mono',monospace"; roleWrap.style.fontSize = '11px'; roleWrap.style.color = 'var(--slate)';
+      roleWrap.appendChild(document.createTextNode('access level'));
+      const roleSelect = document.createElement('select');
+      roleSelect.className = 'role-select';
+      ROLE_OPTIONS.forEach(([val, label]) => {
+        const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
+        if(u.role === val) opt.selected = true;
+        roleSelect.appendChild(opt);
+      });
+      roleSelect.addEventListener('change', () => {
+        const demotingSelf = (u.id === currentUserId && roleSelect.value !== 'admin');
+        if(demotingSelf && !window.confirm('This removes your own Admin access for this browser session. Continue?')){
+          roleSelect.value = u.role; return;
+        }
+        u.role = roleSelect.value; commit();
+      });
+      roleWrap.appendChild(roleSelect);
+      row.appendChild(roleWrap);
+
+      const pinWrap = document.createElement('label');
+      pinWrap.style.display = 'flex'; pinWrap.style.alignItems = 'center'; pinWrap.style.gap = '6px';
+      pinWrap.style.fontFamily = "'JetBrains Mono',monospace"; pinWrap.style.fontSize = '11px'; pinWrap.style.color = 'var(--slate)';
+      pinWrap.appendChild(document.createTextNode('PIN'));
+      const pinInput = document.createElement('input');
+      pinInput.className = 'pin-input'; pinInput.value = u.pin || ''; pinInput.placeholder = 'e.g. 1234';
+      pinInput.addEventListener('change', () => { u.pin = pinInput.value; commit(); });
+      pinWrap.appendChild(pinInput);
+      row.appendChild(pinWrap);
+
+      if(u.id === currentUserId){
+        const youTag = document.createElement('span');
+        youTag.className = 'user-gate-role-tag'; youTag.textContent = 'YOU';
+        row.appendChild(youTag);
+      }
+
+      const rm = document.createElement('button');
+      rm.className = 'remove-btn'; rm.textContent = 'Remove';
+      rm.addEventListener('click', () => {
+        if(u.id === currentUserId){ showFlash("You can't remove your own account while signed in — switch users first."); return; }
+        if(u.role === 'admin' && state.users.filter(x => x.role === 'admin').length <= 1){ showFlash('Keep at least one Admin on the team.'); return; }
+        state.users = state.users.filter(x => x.id !== u.id);
+        commit();
+      });
+      row.appendChild(rm);
+
+      el.appendChild(row);
+    });
+  }
+  const addUserBtn = document.getElementById('addUserBtn');
+  if(addUserBtn) addUserBtn.addEventListener('click', () => {
+    state.users.push({id: uid('usr'), name: 'New Team Member', role: 'coach', pin: String(Math.floor(1000 + Math.random()*9000))});
     commit();
   });
 
@@ -2900,7 +3116,7 @@
     });
   });
 
-  // ===================== LESSON PLANS =====================
+// ===================== LESSON PLANS =====================
   // Builds real, standalone .docx files entirely client-side (no server) using
   // a hand-written minimal OOXML structure + JSZip, so this stays a single
   // HTML file with no build step. Loaded lazily so people who never use this
@@ -3195,11 +3411,10 @@
           });
           const docBlob = await createMinimalDocxBlob(xml);
 
-          const folderName = sanitizeFilenamePart(`${squad.name} ${DAY_NAMES_FULL[weekday]}`);
           const fileName = sanitizeFilenamePart(
             `${d.getFullYear()} ${squad.name} ${termLabel} Week ${weekNum} ${formatDateForFilename(d)} ${DAY_NAMES_FULL[weekday]} ${fmt12(startMin)} to ${fmt12(endMin)}`
           ) + '.docx';
-          zip.folder(folderName).file(fileName, docBlob);
+          zip.file(fileName, docBlob);
           count++;
         }
       }
@@ -3220,7 +3435,7 @@
     statusEl.textContent = `Done — ${count} lesson plan(s) generated in your downloads.`;
   });
 
-  // ===================== STAFFING =====================
+    // ===================== STAFFING =====================
   let staffingViewMode = 'daily'; // 'daily' = weekly roster grouped by day, 'individual' = per-coach rosters
   let staffingSelectedDay = null; // null = show every day; otherwise a single weekday (0-6)
 
@@ -3523,6 +3738,9 @@
 
   // ===================== master render =====================
   function renderAll(){
+    ensureUserSession();
+    applyRoleUI();
+    renderUserList();
     updateMainTitle();
     document.getElementById('rotationLengthInput').value = state.rotationLength;
     ['rlLabel1','rlLabel2','rlLabel3'].forEach(id => {
