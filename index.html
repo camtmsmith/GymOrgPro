@@ -3132,7 +3132,14 @@
     printArea.innerHTML = '';
     const ok = buildFn(printArea);
     if(!ok) return;
+
+    // Browsers suggest a "Save as PDF" filename based on the page title, so
+    // set it to something meaningful just for the print dialog, then restore
+    // the normal tab title once it's closed.
+    const originalTitle = document.title;
+    document.title = sanitizeFilenamePart(`${currentRosterDisplayName()} Gym Rotation Scheduler`);
     window.print();
+    document.title = originalTitle;
   }
 
   document.getElementById('printRotationsByDayBtn').addEventListener('click', () => {
