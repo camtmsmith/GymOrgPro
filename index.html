@@ -52,6 +52,12 @@
   .lp-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:6px;}
   .lp-field{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);}
   .lp-field input{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);}
+  .lp-header-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .lp-header-row:last-child{border-bottom:none;}
+  .lp-header-thumb{height:34px;max-width:180px;border:1px solid var(--line);border-radius:4px;object-fit:cover;flex-shrink:0;background:#fff;}
+  .lp-header-add-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+  .lp-header-add-row input[type="text"]{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;min-width:180px;}
+  .lp-header-add-row input[type="file"]{font-family:'JetBrains Mono',monospace;font-size:11px;}
 
   /* ---- simple RBAC: admin-only panels ---- */
   .admin-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.05em;background:var(--gold-soft);color:#8A6D10;border-radius:100px;padding:3px 8px;margin-left:8px;vertical-align:middle;text-transform:uppercase;}
@@ -386,6 +392,8 @@
       <button type="button" class="subnav-btn" data-target="panel-coaches">Coaches</button>
       <button type="button" class="subnav-btn" data-target="panel-conflicts">Station Conflicts</button>
       <button type="button" class="subnav-btn" data-target="panel-capacity-exceptions">Capacity Exceptions</button>
+      <button type="button" class="subnav-btn" data-target="panel-lp-warmup">Lesson Plan Warm-up</button>
+      <button type="button" class="subnav-btn" data-target="panel-lp-headers">Lesson Plan Headers</button>
     </div>
 
     <div class="panel admin-gated" id="panel-program-details">
@@ -480,6 +488,25 @@
       <div class="squad-filter-actions" id="capacityExceptionStationPicker" style="margin-bottom:14px;flex-wrap:wrap;"></div>
       <div id="capacityExceptionMatrix"></div>
       <div class="conflict-list" id="capacityExceptionSummary"></div>
+    </div>
+
+    <div class="panel" id="panel-lp-warmup">
+      <p class="panel-title">Lesson Plan Warm-up</p>
+      <p class="panel-desc">Standard warm-up activities and durations that repeat every session. These auto-fill into every generated lesson plan's Warm-up section (see Lesson Plans tab) so coaches aren't retyping the same routine each week — they can still be edited by hand afterward in Word.</p>
+      <div id="lpWarmupList"></div>
+      <button class="add-btn" id="addLpWarmupBtn">+ ADD ITEM</button>
+    </div>
+
+    <div class="panel" id="panel-lp-headers">
+      <p class="panel-title">Lesson Plan Headers</p>
+      <p class="panel-desc">Upload one or more header banners (e.g. a different one per term, or per program — Competitive vs Recreational). Give each a name — on the Lesson Plans tab, typing that exact name into "Term / period label" uses that banner; anything else falls back to the default.</p>
+      <div id="lpHeaderList"></div>
+      <div class="lp-header-add-row">
+        <input type="text" id="lpNewHeaderName" placeholder="Name (e.g. Term 1)">
+        <input type="file" id="lpNewHeaderFile" accept="image/*">
+        <button class="add-btn" id="addLpHeaderBtn" type="button">+ ADD HEADER</button>
+      </div>
+      <p class="hint" id="lpHeaderAddStatus"></p>
     </div>
   </div>
 
@@ -589,7 +616,8 @@
       <div class="lp-form-grid">
         <label class="lp-field">
           <span>Term / period label</span>
-          <input type="text" id="lpTermLabel" placeholder="e.g. Term 1">
+          <input type="text" id="lpTermLabel" list="lpTermLabelOptions" placeholder="e.g. Term 1" autocomplete="off">
+          <datalist id="lpTermLabelOptions"></datalist>
         </label>
         <label class="lp-field">
           <span>From date</span>
@@ -605,6 +633,7 @@
         </label>
       </div>
       <p class="hint">The Rotations tab's two-week cycle repeats indefinitely — this tells the generator which real Monday lines up with "Week 1" so it picks the correct station allocations for each date. It defaults to the Monday on/before "From date".</p>
+      <p class="hint">Type any label freely, or pick one from the dropdown that matches an uploaded header (see Setup → Lesson Plan Headers) to use that banner instead of the default.</p>
 
       <p class="panel-title" style="margin-top:22px;font-size:13px;">Squads to include</p>
       <div class="squad-filter" id="lpSquadFilter"></div>
@@ -625,7 +654,7 @@
   const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const PALETTE = ['#B5292E','#1F7A5C','#C9A227','#2A5CAA','#7A4FA3','#B5602E','#3E8E8E','#8C3F63','#4B7B2A','#A6437A'];
   const STORAGE_KEY = 'gym-scheduler-state-v4';
-  const APP_VERSION = 'v3.1';
+  const APP_VERSION = 'v3.2';
   document.getElementById('versionTag').textContent = ' - ' + APP_VERSION.toUpperCase();
 
   // ---------------- shared-password access gate ----------------
@@ -1386,6 +1415,13 @@
     // these two squads should never be scheduled onto it at the same time. Keyed
     // "stationId::sortedSquadA|sortedSquadB". Only meaningful for capacity > 1 stations.
     squadExclusions: [],
+    // Standard warm-up items that auto-fill into every generated lesson plan's
+    // Warm-up section (see Lesson Plans tab), editable by admin/scheduler.
+    lessonPlanWarmup: [],
+    // Named, uploadable header/banner images for lesson plans. Each has a name
+    // (e.g. "Term 1", "Competitive Squad") that the Term/period label field on
+    // the Lesson Plans tab can match against to pick which banner to use.
+    lessonPlanHeaders: [],
     // Session times/coaches recur the same every week (0=Mon..6=Sun). Each day maps
     // to an ARRAY of sessions, so a squad can have separate Morning/Afternoon blocks.
     schedule: {
@@ -1495,6 +1531,8 @@
     });
     if(!Array.isArray(state.conflicts)) state.conflicts = [];
     if(!Array.isArray(state.squadExclusions)) state.squadExclusions = [];
+    if(!Array.isArray(state.lessonPlanWarmup)) state.lessonPlanWarmup = [];
+    if(!Array.isArray(state.lessonPlanHeaders)) state.lessonPlanHeaders = [];
     // Existing rosters saved before Team & Access existed get the demo team
     // seeded in (rather than locking everyone out with an empty team list).
     if(!Array.isArray(state.users) || state.users.length === 0){
@@ -1834,9 +1872,132 @@
       el.appendChild(row);
     });
   }
-  document.getElementById('addLevelBtn').addEventListener('click', () => {
-    state.coachLevels.push({id: uid('lvl'), name:'New Level'});
+  function renderLpWarmupList(){
+    const el = document.getElementById('lpWarmupList');
+    if(!el) return;
+    el.innerHTML = '';
+    if(state.lessonPlanWarmup.length === 0){
+      el.innerHTML = '<p class="empty-note">No standard warm-up items yet — add one below.</p>';
+    }
+    state.lessonPlanWarmup.forEach((item, idx) => {
+      if(!item.duration) item.duration = 5;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      makeRowDraggable(row, state.lessonPlanWarmup, idx);
+
+      const nameInput = document.createElement('input');
+      nameInput.className = 'name-input'; nameInput.value = item.name || '';
+      nameInput.placeholder = 'e.g. Stretch program';
+      nameInput.addEventListener('change', () => { item.name = nameInput.value || item.name; commit(); });
+      row.appendChild(nameInput);
+
+      const durWrap = document.createElement('label');
+      durWrap.style.display = 'flex'; durWrap.style.alignItems = 'center'; durWrap.style.gap = '6px';
+      durWrap.style.fontFamily = "'JetBrains Mono',monospace"; durWrap.style.fontSize = '11px'; durWrap.style.color = 'var(--slate)';
+      const durInput = document.createElement('input');
+      durInput.type = 'number'; durInput.min = 1; durInput.step = 1; durInput.value = item.duration;
+      durInput.style.width = '52px'; durInput.style.padding = '5px'; durInput.style.border = '1px solid var(--line)';
+      durInput.style.borderRadius = '5px'; durInput.style.fontFamily = "'JetBrains Mono',monospace";
+      durInput.addEventListener('change', () => { item.duration = Math.max(1, Math.round(Number(durInput.value)) || item.duration); commit(); });
+      durWrap.appendChild(durInput);
+      durWrap.appendChild(document.createTextNode('min'));
+      row.appendChild(durWrap);
+
+      const rm = document.createElement('button');
+      rm.className = 'remove-btn'; rm.textContent = 'Remove';
+      rm.addEventListener('click', () => { state.lessonPlanWarmup.splice(idx, 1); commit(); });
+      row.appendChild(rm);
+
+      el.appendChild(row);
+    });
+  }
+  document.getElementById('addLpWarmupBtn').addEventListener('click', () => {
+    state.lessonPlanWarmup.push({id: uid('lpw'), name: 'New Activity', duration: 5});
     commit();
+  });
+
+  function renderLpHeaderList(){
+    const el = document.getElementById('lpHeaderList');
+    if(!el) return;
+    el.innerHTML = '';
+    if(state.lessonPlanHeaders.length === 0){
+      el.innerHTML = '<p class="empty-note">No uploaded headers yet — the default banner is used for every lesson plan until you add one below.</p>';
+    }
+    state.lessonPlanHeaders.forEach((h, idx) => {
+      const row = document.createElement('div');
+      row.className = 'lp-header-row';
+
+      const thumb = document.createElement('img');
+      thumb.className = 'lp-header-thumb';
+      thumb.src = `data:image/${h.ext === 'png' ? 'png' : 'jpeg'};base64,${h.imageBase64}`;
+      thumb.alt = h.name;
+      row.appendChild(thumb);
+
+      const nameInput = document.createElement('input');
+      nameInput.className = 'name-input'; nameInput.value = h.name;
+      nameInput.addEventListener('change', () => { h.name = nameInput.value || h.name; commit(); });
+      row.appendChild(nameInput);
+
+      const rm = document.createElement('button');
+      rm.className = 'remove-btn'; rm.textContent = 'Remove';
+      rm.addEventListener('click', () => { state.lessonPlanHeaders.splice(idx, 1); commit(); });
+      row.appendChild(rm);
+
+      el.appendChild(row);
+    });
+
+    // Feeds the Lesson Plans tab's Term/period label suggestions.
+    const datalist = document.getElementById('lpTermLabelOptions');
+    if(datalist){
+      datalist.innerHTML = '';
+      state.lessonPlanHeaders.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.name;
+        datalist.appendChild(opt);
+      });
+    }
+  }
+
+  document.getElementById('addLpHeaderBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('lpNewHeaderName');
+    const fileInput = document.getElementById('lpNewHeaderFile');
+    const statusEl = document.getElementById('lpHeaderAddStatus');
+    const name = nameInput.value.trim();
+    const file = fileInput.files && fileInput.files[0];
+    if(!name){ statusEl.textContent = 'Give this header a name first.'; return; }
+    if(!file){ statusEl.textContent = 'Choose an image file first.'; return; }
+    if(state.lessonPlanHeaders.some(h => h.name.trim().toLowerCase() === name.toLowerCase())){
+      statusEl.textContent = `A header named "${name}" already exists — remove it first or pick a different name.`;
+      return;
+    }
+
+    statusEl.textContent = 'Reading image…';
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      const match = /^data:image\/(\w+);base64,(.*)$/s.exec(dataUrl);
+      if(!match){ statusEl.textContent = 'Could not read that file as an image.'; return; }
+      let ext = match[1].toLowerCase();
+      if(ext === 'jpg') ext = 'jpeg';
+      if(!['jpeg','png','gif'].includes(ext)){ statusEl.textContent = 'Please use a JPEG, PNG, or GIF image.'; return; }
+      const base64 = match[2];
+
+      const img = new Image();
+      img.onload = () => {
+        state.lessonPlanHeaders.push({
+          id: uid('lph'), name, imageBase64: base64, ext,
+          width: img.naturalWidth || 1091, height: img.naturalHeight || 91
+        });
+        nameInput.value = '';
+        fileInput.value = '';
+        statusEl.textContent = `"${name}" added.`;
+        commit();
+      };
+      img.onerror = () => { statusEl.textContent = 'Could not read that image\'s dimensions.'; };
+      img.src = dataUrl;
+    };
+    reader.onerror = () => { statusEl.textContent = 'Could not read that file.'; };
+    reader.readAsDataURL(file);
   });
 
   function renderSquadList(){
@@ -2375,6 +2536,10 @@
   function renderScheduleList(){
     renderSquadFilter('scheduleSquadFilter', scheduleHiddenSquads, renderScheduleList);
     const el = document.getElementById('scheduleList');
+    // Editing a card (e.g. picking a coach) triggers a full re-render; without
+    // this, each weekday's horizontally-scrolled row would snap back to the
+    // far left every time, even for edits made after scrolling right.
+    const savedScrollLefts = [...el.querySelectorAll('.day-grid-scroll')].map(s => s.scrollLeft);
     el.innerHTML = '';
     if(state.squads.length === 0){ el.innerHTML = '<p class="empty-note">Add a squad in Setup first.</p>'; return; }
     state.squads.forEach(s => { if(!state.schedule[s.id]) state.schedule[s.id] = {}; });
@@ -2403,6 +2568,10 @@
         block.appendChild(scroll);
 
         el.appendChild(block);
+        // Must set scrollLeft AFTER the element is in the live document — a
+        // detached node has no computed layout yet, so this silently no-ops
+        // if set any earlier (which is why the previous attempt didn't work).
+        if(savedScrollLefts[weekday]) scroll.scrollLeft = savedScrollLefts[weekday];
       }
     } else {
       visibleSquads.forEach(s => {
@@ -3209,7 +3378,8 @@
   function buildLessonPlanDocumentXml(d){
     const parts = [];
     const bannerWidthEmu = 6120130;
-    const bannerHeightEmu = Math.round(bannerWidthEmu * LP_BANNER_PX.h / LP_BANNER_PX.w);
+    const aspect = d.bannerAspect || (LP_BANNER_PX.h / LP_BANNER_PX.w);
+    const bannerHeightEmu = Math.round(bannerWidthEmu * aspect);
     parts.push(docxImageParagraph('rIdBanner', bannerWidthEmu, bannerHeightEmu));
     parts.push(docxParagraph(' ', {spacingAfter: 120}));
 
@@ -3229,9 +3399,16 @@
     parts.push(docxParagraph([docxRun('Lesson Aim/Theme: ', {bold: true}), docxRun('_'.repeat(55))], {spacingAfter: 200}));
 
     parts.push(docxSectionBar('Warm-up', '808080', 'FFFFFF'));
+    const warmupItems = d.warmupItems || [];
+    const warmupRows = warmupItems.length > 0
+      ? warmupItems.map(item => docxTableRow([
+          docxTableCell(item.name, {width: LP_PAGE_CONTENT_WIDTH - 2000}),
+          docxTableCell(item.duration + ' min', {width: 2000}),
+        ]))
+      : Array.from({length: 4}, () => docxTableRow([docxTableCell('', {width: LP_PAGE_CONTENT_WIDTH - 2000}), docxTableCell('', {width: 2000})]));
     parts.push(docxTable([
       docxTableRow([docxTableCell('Activity', {shade: 'BFBFBF', bold: true, width: LP_PAGE_CONTENT_WIDTH - 2000}), docxTableCell('Duration', {shade: 'BFBFBF', bold: true, width: 2000})]),
-      ...Array.from({length: 4}, () => docxTableRow([docxTableCell('', {width: LP_PAGE_CONTENT_WIDTH - 2000}), docxTableCell('', {width: 2000})]))
+      ...warmupRows
     ], [LP_PAGE_CONTENT_WIDTH - 2000, 2000]));
 
     if(d.circuits.length === 0){
@@ -3271,14 +3448,17 @@
       '<w:body>' + parts.join('') + sectPr + '</w:body></w:document>';
   }
 
-  async function createMinimalDocxBlob(documentXml){
+  async function createMinimalDocxBlob(documentXml, bannerB64, bannerExt){
+    bannerB64 = bannerB64 || LP_BANNER_IMG_B64;
+    bannerExt = bannerExt || 'jpeg';
+    const bannerMime = bannerExt === 'png' ? 'image/png' : (bannerExt === 'gif' ? 'image/gif' : 'image/jpeg');
     const zip = new JSZip();
     zip.file('[Content_Types].xml',
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
       '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
       '<Default Extension="xml" ContentType="application/xml"/>' +
-      '<Default Extension="jpeg" ContentType="image/jpeg"/>' +
+      `<Default Extension="${bannerExt}" ContentType="${bannerMime}"/>` +
       '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
       '</Types>');
     zip.file('_rels/.rels',
@@ -3290,9 +3470,9 @@
     zip.file('word/_rels/document.xml.rels',
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-      '<Relationship Id="rIdBanner" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/banner.jpeg"/>' +
+      `<Relationship Id="rIdBanner" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/banner.${bannerExt}"/>` +
       '</Relationships>');
-    zip.file('word/media/banner.jpeg', LP_BANNER_IMG_B64, {base64: true});
+    zip.file(`word/media/banner.${bannerExt}`, bannerB64, {base64: true});
     return zip.generateAsync({type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   }
 
@@ -3367,6 +3547,13 @@
     const includedSquads = state.squads.filter(s => !lpHiddenSquads.has(s.id));
     if(includedSquads.length === 0){ statusEl.textContent = 'Select at least one squad below.'; return; }
 
+    // If the typed/selected term label exactly matches an uploaded header
+    // preset's name, use that banner instead of the built-in default.
+    const matchedHeader = state.lessonPlanHeaders.find(h => h.name.trim().toLowerCase() === termLabel.toLowerCase());
+    const bannerAspect = matchedHeader ? (matchedHeader.height / matchedHeader.width) : undefined;
+    const bannerB64 = matchedHeader ? matchedHeader.imageBase64 : undefined;
+    const bannerExt = matchedHeader ? matchedHeader.ext : undefined;
+
     statusEl.textContent = 'Loading zip library…';
     const zipOk = await ensureJSZip();
     if(!zipOk){ statusEl.textContent = 'Could not load the zip library — check your connection and try again.'; return; }
@@ -3399,9 +3586,9 @@
             squadName: squad.name, duration: session.duration,
             coachName: coach ? coach.name : 'UNASSIGNED',
             assistantName: asst ? asst.name : '—',
-            circuits
+            circuits, warmupItems: state.lessonPlanWarmup, bannerAspect
           });
-          const docBlob = await createMinimalDocxBlob(xml);
+          const docBlob = await createMinimalDocxBlob(xml, bannerB64, bannerExt);
 
           const fileName = sanitizeFilenamePart(
             `${d.getFullYear()} ${squad.name} ${termLabel} Week ${weekNum} ${formatDateForFilename(d)} ${DAY_NAMES_FULL[weekday]} ${fmt12(startMin)} to ${fmt12(endMin)}`
@@ -3745,6 +3932,8 @@
     renderCoachList();
     renderConflictMatrix();
     renderCapacityExceptions();
+    renderLpWarmupList();
+    renderLpHeaderList();
     renderScheduleList();
     renderDayPickerRota();
     renderRotaBoard();
