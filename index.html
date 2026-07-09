@@ -31,6 +31,14 @@
   .roster-switch select{font-family:'Inter',sans-serif;font-weight:600;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;max-width:160px;}
   .roster-switch select option{color:#12213D;}
   .roster-switch .header-btn.ghost{padding:6px 10px;font-size:10px;}
+  /* the header-bar roster-switch styling above assumes a dark background;
+     this variant is for the same select+ghost-button layout sitting inside
+     an ordinary white .panel (e.g. the Calendar tab's block switcher) */
+  .roster-switch.on-light label{color:var(--slate);}
+  .roster-switch.on-light select{background:var(--panel);color:var(--ink);border:1px solid var(--line);}
+  .roster-switch.on-light select option{color:var(--ink);}
+  .roster-switch.on-light .header-btn.ghost{background:var(--chalk);color:var(--ink);border:1px solid var(--line);}
+  .roster-switch.on-light .header-btn.ghost:hover{background:var(--line);}
   .roster-manage-wrap{position:relative;display:inline-block;}
   .roster-manage-panel{position:absolute;top:32px;right:0;z-index:30;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;box-shadow:0 10px 28px rgba(0,0,0,.25);width:460px;max-width:92vw;max-height:460px;overflow-y:auto;display:none;}
   .roster-manage-panel.open{display:block;}
@@ -47,6 +55,47 @@
   .roster-row-btn.danger{color:#B5292E;border-color:#E8C7C7;}
   .roster-row-btn.danger:hover{background:#FBEAEA;}
   .roster-manage-show-hidden{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);cursor:pointer;}
+
+  /* ---- calendar tab: blocks, session list, lesson plan editor modal ---- */
+  .cal-block-form{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px;background:var(--chalk);}
+  .cal-block-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;}
+  .cal-block-form-grid label{display:flex;flex-direction:column;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--slate);}
+  .cal-block-form-grid input{padding:7px;border:1px solid var(--line);border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;}
+  .cal-block-squad-checks{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .cal-block-squad-checks label{display:flex;align-items:center;gap:5px;}
+  tr.calendar-session-row{cursor:pointer;}
+  tr.calendar-session-row:hover{background:var(--chalk);}
+  .lp-status-badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.04em;border-radius:100px;padding:3px 9px;text-transform:uppercase;white-space:nowrap;display:inline-block;}
+  .lp-status-badge.done{background:var(--spring-soft);color:var(--spring);}
+  .lp-status-badge.pending{background:var(--idle);color:var(--slate);}
+  .lp-modal-overlay{position:fixed;inset:0;z-index:900;background:rgba(18,33,61,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+  .lp-modal-overlay.open{display:flex;}
+  .lp-modal-card{background:var(--panel);border-radius:12px;padding:28px 26px;max-width:720px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .lp-modal-close{float:right;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--slate);}
+  .lp-modal-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink);margin:0 0 4px;}
+  .lp-modal-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate);margin:0 0 18px;}
+  .lp-circuit-block{border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px;}
+  .lp-circuit-title{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;color:var(--ink);margin:0 0 10px;}
+  .lp-skill-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .lp-skill-chip{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--chalk);border:1px solid var(--line);border-radius:100px;padding:5px 10px;cursor:pointer;user-select:none;}
+  .lp-skill-chip.selected{background:var(--gold-soft);border-color:var(--gold);color:#8A6D10;}
+  .lp-modal-field{display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);margin-bottom:10px;}
+  .lp-modal-field textarea{padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);resize:vertical;min-height:44px;width:100%;box-sizing:border-box;}
+  .lp-modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .cal-nav-btn{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--chalk);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;color:var(--ink);}
+  .cal-nav-btn:hover:not(:disabled){border-color:var(--ink);}
+  .cal-nav-btn:disabled{opacity:.4;cursor:default;}
+  .cal-nav-label{font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);}
+  .cal-week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .cal-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+  .cal-month-day-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;text-align:center;padding-bottom:2px;}
+  .cal-day-col{border:1px solid var(--line);border-radius:8px;padding:8px;min-height:64px;background:var(--panel);}
+  .cal-day-col.out-of-range{opacity:.4;background:var(--idle);}
+  .cal-day-head{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--slate);margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;}
+  .cal-day-head .daynum{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;color:var(--ink);}
+  .cal-session-chip{display:block;width:100%;text-align:left;font-family:'JetBrains Mono',monospace;font-size:10px;border:none;border-radius:5px;padding:4px 6px;margin-bottom:4px;cursor:pointer;color:#fff;line-height:1.4;}
+  .cal-session-chip .chip-status{float:right;margin-left:4px;}
 
   /* ---- lesson plans ---- */
   .lp-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:6px;}
@@ -187,6 +236,15 @@
   .view-toggle-btn{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:var(--idle);color:var(--slate);border:1px solid var(--line);border-radius:100px;padding:7px 14px;cursor:pointer;font-weight:600;}
   .view-toggle-btn:hover:not(.active){background:var(--chalk);border-color:var(--slate);}
   .view-toggle-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .slide-switch{display:flex;align-items:center;gap:9px;margin-bottom:18px;user-select:none;}
+  .slide-switch-label{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);cursor:pointer;}
+  .slide-switch-label.active{color:var(--ink);font-weight:700;}
+  .slide-switch-track{position:relative;display:inline-block;width:38px;height:21px;flex-shrink:0;}
+  .slide-switch-track input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .slide-switch-pill{position:absolute;inset:0;background:var(--idle);border:1px solid var(--line);border-radius:100px;transition:background .15s;pointer-events:none;}
+  .slide-switch-pill::before{content:'';position:absolute;width:15px;height:15px;left:2px;top:2px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .15s;}
+  .slide-switch-track input:checked ~ .slide-switch-pill{background:var(--ink);border-color:var(--ink);}
+  .slide-switch-track input:checked ~ .slide-switch-pill::before{transform:translateX(17px);}
   .day-grid{display:grid;grid-template-columns:repeat(var(--dg-cols,7),1fr);gap:8px;}
   .day-grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
   .day-grid-scroll .day-grid{grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);grid-template-columns:none;}
@@ -346,6 +404,18 @@
         </div>
       </div>
     </div>
+    <div class="roster-switch" id="locationSwitch" title="Setup and Training Schedule are unique per location.">
+      <label for="locationSelect">Location</label>
+      <select id="locationSelect"></select>
+      <button type="button" class="header-btn ghost scheduler-gated-btn" id="newLocationBtn" title="Scheduler/Admin only">+ New</button>
+      <div class="roster-manage-wrap admin-gated-control" title="Admin only">
+        <button type="button" class="header-btn ghost" id="manageLocationsBtn">Manage ▾</button>
+        <div class="roster-manage-panel" id="locationManagePanel">
+          <p class="roster-manage-title">Manage locations</p>
+          <div id="locationManageList"></div>
+        </div>
+      </div>
+    </div>
     <div class="status-chip" id="statusChip"><span class="dot"></span><span id="statusChipText">Loading…</span></div>
   </div>
 </div>
@@ -356,9 +426,10 @@
       <button class="tab-btn" data-tab="setup">01 · Setup</button>
       <button class="tab-btn" data-tab="schedule">02 · Training Schedule</button>
       <button class="tab-btn" data-tab="rotations">03 · Rotations</button>
-      <button class="tab-btn" data-tab="staffing">04 · Staffing</button>
-      <button class="tab-btn" data-tab="overview">05 · Overview</button>
+      <button class="tab-btn" data-tab="overview">04 · Overview</button>
+      <button class="tab-btn" data-tab="calendar">05 · Calendar</button>
       <button class="tab-btn" data-tab="lessonplans">06 · Lesson Plans</button>
+      <button class="tab-btn" data-tab="staffing">07 · Staffing</button>
     </div>
     <div class="tab-bar-actions">
       <div class="print-menu-wrap">
@@ -387,6 +458,7 @@
       <button type="button" class="subnav-btn" data-target="panel-rotation-settings">Rotation Settings</button>
       <button type="button" class="subnav-btn" data-target="panel-team-access">Team &amp; Access</button>
       <button type="button" class="subnav-btn" data-target="panel-coaching-levels">Coaching Levels</button>
+      <button type="button" class="subnav-btn" data-target="panel-skills">Skills</button>
       <button type="button" class="subnav-btn" data-target="panel-squads">Squads</button>
       <button type="button" class="subnav-btn" data-target="panel-stations">Gym Stations</button>
       <button type="button" class="subnav-btn" data-target="panel-coaches">Coaches</button>
@@ -403,15 +475,11 @@
       </div>
       <div class="admin-real-content">
         <p class="panel-title">Program Details <span class="admin-badge">ADMIN ONLY</span></p>
-        <p class="panel-desc">Shown in the header as "Gym Org Pro - {Gym Name} - {Location}". Leave either blank to omit it.</p>
+        <p class="panel-desc">Gym name is shown in the header as "Gym Org Pro - {Gym Name} - {Location}" and applies to every location. Leave blank to omit it. Locations themselves — and everything below on this Setup tab — are managed from the <strong>Location</strong> switcher at the top of the page: each location has its own Squads, Stations, Coaches, Coaching Levels, Conflicts, Capacity Exceptions and Lesson Plan setup, and its own Training Schedule filtered down from that.</p>
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
           <label style="display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);">
             Gym name
             <input type="text" id="gymNameInput" placeholder="e.g. College Gymnastics" style="padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;min-width:220px;">
-          </label>
-          <label style="display:flex;flex-direction:column;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--slate);">
-            Location
-            <input type="text" id="gymLocationInput" placeholder="e.g. Location X" style="padding:8px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;min-width:220px;">
           </label>
         </div>
       </div>
@@ -452,6 +520,13 @@
       <p class="panel-desc">Ranked lowest to highest. Used to set each squad's minimum required coach level, and to filter which coaches qualify for it. Reorder with the arrows — rank is determined by position in this list.</p>
       <div id="levelList"></div>
       <button class="add-btn" id="addLevelBtn">+ ADD LEVEL</button>
+    </div>
+
+    <div class="panel" id="panel-skills">
+      <p class="panel-title">Skills</p>
+      <p class="panel-desc">A simple tag list coaches can pick from when writing a lesson plan's circuit notes on the Calendar tab. (A fuller skills matrix is planned later.)</p>
+      <div id="skillList"></div>
+      <button class="add-btn" id="addSkillBtn">+ ADD SKILL</button>
     </div>
 
     <div class="panel" id="panel-squads">
@@ -567,6 +642,77 @@
     </div>
   </div>
 
+  <!-- ===================== CALENDAR ===================== -->
+  <div class="tab-panel" id="tab-calendar">
+    <p class="view-only-note">👁 Creating/renaming/deleting calendar blocks needs a Scheduler or Admin sign-in — but anyone signed in, including Coaches, can open a session below and save its lesson plan.</p>
+    <div class="panel">
+      <p class="panel-title">Calendar Block</p>
+      <p class="panel-desc">A named date range (e.g. a term) that anchors the Rotations two-week cycle to real dates, so sessions below show their actual station rotation and can have a lesson plan attached. Keep old blocks around — their sessions' lesson plans stay attached to their real dates either way.</p>
+      <div class="roster-switch on-light" id="calendarBlockSwitch">
+        <label for="calendarBlockSelect">Block</label>
+        <select id="calendarBlockSelect"></select>
+        <div class="roster-manage-wrap scheduler-gated-btn" title="Scheduler/Admin only">
+          <button type="button" class="header-btn ghost" id="newCalendarBlockBtn">+ New</button>
+          <div class="roster-manage-panel" id="calendarBlockCreatePanel">
+            <p class="roster-manage-title" id="calendarBlockFormTitle">New block</p>
+            <div class="cal-block-form">
+              <div class="cal-block-form-grid">
+                <label>Name<input type="text" id="calBlockName" placeholder="e.g. Term 3 2026"></label>
+                <label>Start date (a Monday)<input type="date" id="calBlockStart"></label>
+                <label>End date<input type="date" id="calBlockEnd"></label>
+              </div>
+              <p class="panel-desc" style="margin:0 0 6px;">Squads included (none checked = all squads)</p>
+              <div class="cal-block-squad-checks" id="calBlockSquadChecks"></div>
+              <div style="display:flex;gap:8px;">
+                <button type="button" class="add-btn" id="calBlockSaveBtn" style="margin:0;">Create Block</button>
+                <button type="button" class="roster-row-btn" id="calBlockCancelBtn" style="display:none;">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="roster-manage-wrap admin-gated-control" title="Admin only">
+          <button type="button" class="header-btn ghost" id="manageCalendarBlocksBtn">Manage ▾</button>
+          <div class="roster-manage-panel" id="calendarBlockManagePanel">
+            <p class="roster-manage-title">Manage blocks</p>
+            <div id="calendarBlockManageList"></div>
+          </div>
+        </div>
+      </div>
+      <p class="empty-note" id="calendarBlockEmptyNote" style="display:none;margin-top:12px;">No calendar blocks yet for this location — click "+ New" to create one (e.g. "Term 3 2026").</p>
+    </div>
+
+    <div class="panel" id="calendarBlockContent" style="display:none;">
+      <p class="panel-title">Sessions</p>
+      <p class="hint" id="calendarBlockDateRange" style="margin:0 0 10px;"></p>
+      <p class="panel-desc">Click a session to view or write its lesson plan.</p>
+      <div class="schedule-view-toggle" id="calendarViewToggle">
+        <span class="view-toggle-label">View</span>
+        <button type="button" class="view-toggle-btn active" data-calview="list">List</button>
+        <button type="button" class="view-toggle-btn" data-calview="week">Week</button>
+        <button type="button" class="view-toggle-btn" data-calview="month">Month</button>
+      </div>
+      <div class="squad-filter" id="calendarSquadFilter"></div>
+      <div id="calendarSessionList"></div>
+    </div>
+  </div>
+
+  <div class="lp-modal-overlay" id="lpModalOverlay">
+    <div class="lp-modal-card">
+      <button type="button" class="lp-modal-close" id="lpModalCloseBtn">&times;</button>
+      <p class="lp-modal-title" id="lpModalTitle"></p>
+      <p class="lp-modal-sub" id="lpModalSub"></p>
+      <div id="lpModalCircuits"></div>
+      <label class="lp-modal-field">
+        <span>Warm down notes</span>
+        <textarea id="lpModalWarmDown"></textarea>
+      </label>
+      <div class="lp-modal-actions">
+        <button type="button" class="add-btn" id="lpModalSaveBtn" style="margin:0;">Save Lesson Plan</button>
+        <button type="button" class="roster-row-btn danger" id="lpModalClearBtn">Clear Plan</button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- ===================== STAFFING ===================== -->
   <div class="tab-panel" id="tab-staffing">
@@ -601,7 +747,15 @@
   <div class="tab-panel" id="tab-overview">
     <div class="panel">
       <p class="panel-title">Fortnightly Station Usage</p>
-      <p class="panel-desc">Total <span id="rlLabel3">15</span>-minute blocks each squad has been allocated on each station, broken out by Week 1 and Week 2 so you can check the split is even across the cycle, plus a fortnight total. Stations with no usage for the selected squads are hidden.</p>
+      <p class="panel-desc">Each squad's allocation on each station, broken out by Week 1 and Week 2 so you can check the split is even across the cycle, plus a fortnight total. Stations with no usage for the selected squads are hidden.</p>
+      <div class="slide-switch" id="overviewUnitToggle">
+        <span class="slide-switch-label active" data-overviewunit="sessions">Sessions</span>
+        <span class="slide-switch-track">
+          <input type="checkbox" id="overviewUnitCheckbox">
+          <span class="slide-switch-pill"></span>
+        </span>
+        <span class="slide-switch-label" data-overviewunit="hours">Hours</span>
+      </div>
       <div class="squad-filter" id="overviewSquadFilter"></div>
       <div id="overviewTable"></div>
     </div>
@@ -611,7 +765,14 @@
   <div class="tab-panel" id="tab-lessonplans">
     <div class="panel">
       <p class="panel-title">Generate Lesson Plans</p>
-      <p class="panel-desc">Produces one Word document per session in the date range below, all named clearly (squad, term, week, date, day, time) and packaged flat in a single zip — no subfolders to dig through. Each document's header, coach details, and circuit list (station + duration) are filled in automatically from Training Schedule and Rotations, styled to match the club's own lesson plan template. The Skill/KCP/Safety and warm-up/warm-down details are left blank for coaches to fill in themselves.</p>
+      <p class="panel-desc">Produces one Word document per session in the date range below, all named clearly (squad, term, week, date, day, time) and packaged flat in a single zip — no subfolders to dig through. Each document's header, coach details, and circuit list (station + duration) are filled in automatically from Training Schedule and Rotations, styled to match the club's own lesson plan template. Skill/KCP/Safety and warm-down cells are filled in from whatever's been saved for that session on the Calendar tab, left blank otherwise.</p>
+
+      <div class="lp-form-grid" style="align-items:flex-end;">
+        <label class="lp-field">
+          <span>Load dates/squads from a Calendar Block (optional)</span>
+          <select id="lpLoadFromBlock"><option value="">— choose a block —</option></select>
+        </label>
+      </div>
 
       <div class="lp-form-grid">
         <label class="lp-field">
@@ -654,7 +815,7 @@
   const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const PALETTE = ['#B5292E','#1F7A5C','#C9A227','#2A5CAA','#7A4FA3','#B5602E','#3E8E8E','#8C3F63','#4B7B2A','#A6437A'];
   const STORAGE_KEY = 'gym-scheduler-state-v4';
-  const APP_VERSION = 'v3.2';
+  const APP_VERSION = 'v4.0';
   document.getElementById('versionTag').textContent = ' - ' + APP_VERSION.toUpperCase();
 
   // ---------------- shared-password access gate ----------------
@@ -1311,27 +1472,28 @@
   // Reusable squad filter: renders Select All / Deselect All + a checkbox per squad
   // into `containerId`, driven by `hiddenSet` (a Set of hidden squad ids). Calls
   // `onChange()` after any toggle so the caller can re-render whatever it filters.
-  function renderSquadFilter(containerId, hiddenSet, onChange){
+  function renderSquadFilter(containerId, hiddenSet, onChange, squadList){
+    const squads = squadList || state.squads;
     const el = document.getElementById(containerId);
     if(!el) return;
     el.innerHTML = '';
-    if(state.squads.length === 0) return;
+    if(squads.length === 0) return;
 
     const actions = document.createElement('div');
     actions.className = 'squad-filter-actions';
     const allBtn = document.createElement('button');
     allBtn.type = 'button'; allBtn.className = 'view-toggle-btn'; allBtn.textContent = 'Select All';
-    allBtn.addEventListener('click', () => { hiddenSet.clear(); onChange(); });
+    allBtn.addEventListener('click', () => { squads.forEach(s => hiddenSet.delete(s.id)); onChange(); });
     const noneBtn = document.createElement('button');
     noneBtn.type = 'button'; noneBtn.className = 'view-toggle-btn'; noneBtn.textContent = 'Deselect All';
-    noneBtn.addEventListener('click', () => { state.squads.forEach(s => hiddenSet.add(s.id)); onChange(); });
+    noneBtn.addEventListener('click', () => { squads.forEach(s => hiddenSet.add(s.id)); onChange(); });
     actions.appendChild(allBtn);
     actions.appendChild(noneBtn);
     el.appendChild(actions);
 
     const items = document.createElement('div');
     items.className = 'squad-filter-items';
-    state.squads.forEach(s => {
+    squads.forEach(s => {
       const label = document.createElement('label');
       label.className = 'squad-filter-item' + (hiddenSet.has(s.id) ? ' is-hidden' : '');
       const cb = document.createElement('input');
@@ -1422,6 +1584,23 @@
     // (e.g. "Term 1", "Competitive Squad") that the Term/period label field on
     // the Lesson Plans tab can match against to pick which banner to use.
     lessonPlanHeaders: [],
+    // Flat admin-managed list of skill names coaches can tag onto a rotation
+    // circuit in a lesson plan. Deliberately just {id,name} for now — a fuller
+    // skills matrix is planned later and will slot in here without changing
+    // how lessonPlans below reference skills (by id).
+    skills: [],
+    // Named date ranges (e.g. a term) that anchor the abstract 14-day Rotations
+    // cycle to real calendar dates for the Calendar tab. startDate should be a
+    // Monday (same convention as the Lesson Plans tab's anchor-Monday field).
+    calendarBlocks: [],
+    // Per-real-date lesson plan content, saved from the Calendar tab and read
+    // back into the bulk Lesson Plans docx export. Keyed by ISO date string,
+    // then squadId, then the recurring session's id (state.schedule[squadId]
+    // [weekday][].id) — so each real occurrence of a weekly-recurring session
+    // gets its own entry. { [dateStr]: { [squadId]: { [sessionId]: {
+    // circuits:[{stationId, skillIds:[], kcp:'', safety:''}], warmDown:'',
+    // updatedAt } } } }
+    lessonPlans: {},
     // Session times/coaches recur the same every week (0=Mon..6=Sun). Each day maps
     // to an ARRAY of sessions, so a squad can have separate Morning/Afternoon blocks.
     schedule: {
@@ -1436,7 +1615,19 @@
     selectedDay: 0, // 0-13 across the fortnight (0-6 = Week 1, 7-13 = Week 2)
     rotationLength: 15, // minutes per rotation slot, 5-60
     gymName: '',
-    location: '',
+    // Multi-location support: everything above this comment (coachLevels through
+    // rotationLength/selectedDay — see LOCATION_FIELDS) belongs to whichever
+    // location is active. `locations` is the list of locations for this roster;
+    // `byLocation` caches the same fields for every location OTHER than the
+    // active one, keyed by location id (see switchActiveLocation()). The
+    // active location's own copy of those fields simply lives at the top
+    // level of state, so all existing setup/schedule code keeps working
+    // unmodified — it's always looking at "whichever location is active."
+    locations: [
+      {id:'loc_default', name:'Main Location'},
+    ],
+    activeLocationId: 'loc_default',
+    byLocation: {},
     // Demo team covering all four access levels — rename/re-PIN these (or add
     // your own) under Setup → Team & Access. Roles, least to most access:
     // viewer (read-only) < coach (read-only + own roster) < scheduler
@@ -1487,7 +1678,101 @@
     });
   }
 
+  // Fields that belong to a single location — see the comment on `locations`
+  // in DEFAULT_STATE. Anything NOT in this list (gymName, users, locations
+  // itself, etc.) is shared across every location in this roster.
+  const LOCATION_FIELDS = ['coachLevels','squads','stations','coaches','conflicts','squadExclusions','lessonPlanWarmup','lessonPlanHeaders','schedule','allocations','rotationLength','selectedDay','skills','calendarBlocks','lessonPlans'];
+
+  // Existing rosters (saved before locations existed) just have these fields
+  // sitting at the top level already — that's exactly what "the active
+  // location's fields live at the top level" means, so they become the one
+  // auto-created location's data with no data loss and no shape changes.
+  function migrateLocations(){
+    if(!Array.isArray(state.locations) || state.locations.length === 0){
+      const id = uid('loc');
+      state.locations = [{id, name: state.location || 'Main Location'}];
+      state.activeLocationId = id;
+      state.byLocation = {};
+    }
+    if(!state.byLocation || typeof state.byLocation !== 'object') state.byLocation = {};
+    if(!state.activeLocationId || !state.locations.some(l => l.id === state.activeLocationId)){
+      state.activeLocationId = state.locations[0].id;
+    }
+    delete state.location; // superseded by the structured `locations` list
+  }
+
+  function blankLocationFields(){
+    return {
+      coachLevels: JSON.parse(JSON.stringify(DEFAULT_STATE.coachLevels)),
+      squads: [], stations: [], coaches: [], conflicts: [], squadExclusions: [],
+      lessonPlanWarmup: [], lessonPlanHeaders: [], schedule: {}, allocations: {},
+      rotationLength: 15, selectedDay: 0,
+      skills: [], calendarBlocks: [], lessonPlans: {},
+    };
+  }
+  function snapshotLocationFields(){
+    const snap = {};
+    LOCATION_FIELDS.forEach(f => { snap[f] = state[f]; });
+    return JSON.parse(JSON.stringify(snap));
+  }
+  // Swaps the top-level "active" fields (squads, schedule, etc.) out for the
+  // target location's own copy, stashing the outgoing location's fields into
+  // byLocation first. This is the only place those fields move between the
+  // top level and the cache, which is what lets every existing setup/schedule
+  // function keep reading/writing plain `state.squads` etc. unmodified.
+  function switchActiveLocation(newLocId){
+    if(newLocId === state.activeLocationId) return;
+    if(!state.byLocation) state.byLocation = {};
+    if(state.locations.some(l => l.id === state.activeLocationId)){
+      state.byLocation[state.activeLocationId] = snapshotLocationFields();
+    }
+    const restore = state.byLocation[newLocId] || blankLocationFields();
+    delete state.byLocation[newLocId];
+    Object.assign(state, restore);
+    state.activeLocationId = newLocId;
+    normalizeFirebaseShapes(); // the restored copy may have the same Firebase array-ification quirk
+    commit();
+  }
+  function addLocation(name){
+    const id = uid('loc');
+    state.locations.push({id, name});
+    switchActiveLocation(id);
+  }
+  function renameLocation(id, name){
+    const loc = state.locations.find(l => l.id === id);
+    if(!loc) return;
+    loc.name = name;
+    commit();
+  }
+  function deleteLocation(id, name){
+    if(state.locations.length <= 1){
+      showFlash('You must keep at least one location.');
+      return;
+    }
+    const ok = window.confirm('Permanently delete "' + name + '" and all of its setup/schedule data? This cannot be undone.');
+    if(!ok) return;
+    state.locations = state.locations.filter(l => l.id !== id);
+    if(state.byLocation) delete state.byLocation[id];
+    if(state.activeLocationId === id){
+      switchActiveLocation(state.locations[0].id);
+    } else {
+      commit();
+    }
+  }
+  function locationNameExists(name, excludeId){
+    const norm = name.trim().toLowerCase();
+    return state.locations.some(l => l.id !== excludeId && l.name.trim().toLowerCase() === norm);
+  }
+  function promptUniqueLocationName(promptText, initial, excludeId){
+    let name = window.prompt(promptText, initial);
+    while(name !== null && name.trim() && locationNameExists(name.trim(), excludeId)){
+      name = window.prompt(`"${name.trim()}" is already in use — please choose a different name:`, name.trim());
+    }
+    return (name && name.trim()) ? name.trim() : null;
+  }
+
   function migrateState(){
+    migrateLocations();
     normalizeFirebaseShapes();
     if(!state.rotationLength) state.rotationLength = 15;
     if(!Array.isArray(state.coachLevels) || state.coachLevels.length === 0){
@@ -1533,6 +1818,9 @@
     if(!Array.isArray(state.squadExclusions)) state.squadExclusions = [];
     if(!Array.isArray(state.lessonPlanWarmup)) state.lessonPlanWarmup = [];
     if(!Array.isArray(state.lessonPlanHeaders)) state.lessonPlanHeaders = [];
+    if(!Array.isArray(state.skills)) state.skills = [];
+    if(!Array.isArray(state.calendarBlocks)) state.calendarBlocks = [];
+    if(!state.lessonPlans || typeof state.lessonPlans !== 'object') state.lessonPlans = {};
     // Existing rosters saved before Team & Access existed get the demo team
     // seeded in (rather than locking everyone out with an empty team list).
     if(!Array.isArray(state.users) || state.users.length === 0){
@@ -1565,6 +1853,81 @@
   document.getElementById('showHiddenRostersCb').addEventListener('change', (e) => {
     showHiddenRosters = e.target.checked;
     renderRosterManagePanel();
+  });
+
+  function renderLocationSwitcher(){
+    const sel = document.getElementById('locationSelect');
+    if(!sel) return;
+    const locations = state.locations || [];
+    sel.innerHTML = '';
+    locations.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
+      const opt = document.createElement('option');
+      opt.value = loc.id;
+      opt.textContent = loc.name;
+      if(loc.id === state.activeLocationId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    renderLocationManagePanel();
+  }
+  document.getElementById('locationSelect').addEventListener('change', (e) => {
+    if(e.target.value && e.target.value !== state.activeLocationId) switchActiveLocation(e.target.value);
+  });
+  document.getElementById('newLocationBtn').addEventListener('click', () => {
+    const name = promptUniqueLocationName('Name for the new location (e.g. a branch or gym site):', '', null);
+    if(!name) return;
+    addLocation(name);
+  });
+
+  function renderLocationManagePanel(){
+    const listEl = document.getElementById('locationManageList');
+    if(!listEl) return;
+    const locations = (state.locations || []).slice().sort((a,b) => a.name.localeCompare(b.name));
+    listEl.innerHTML = '';
+    locations.forEach(loc => {
+      const row = document.createElement('div');
+      row.className = 'roster-row' + (loc.id === state.activeLocationId ? ' is-current' : '');
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'roster-row-name';
+      nameEl.textContent = loc.name;
+      row.appendChild(nameEl);
+
+      const actions = document.createElement('div');
+      actions.className = 'roster-row-actions';
+
+      const renameBtn = document.createElement('button');
+      renameBtn.type = 'button'; renameBtn.className = 'roster-row-btn'; renameBtn.textContent = 'Rename';
+      renameBtn.addEventListener('click', () => {
+        const name = promptUniqueLocationName('New name for "' + loc.name + '":', loc.name, loc.id);
+        if(!name || name === loc.name) return;
+        renameLocation(loc.id, name);
+      });
+      actions.appendChild(renameBtn);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button'; deleteBtn.className = 'roster-row-btn danger'; deleteBtn.textContent = 'Delete';
+      deleteBtn.disabled = locations.length <= 1;
+      deleteBtn.addEventListener('click', () => deleteLocation(loc.id, loc.name));
+      actions.appendChild(deleteBtn);
+
+      row.appendChild(actions);
+      listEl.appendChild(row);
+    });
+    if(listEl.children.length === 0){
+      listEl.innerHTML = '<p class="empty-note" style="margin:4px 0;">No locations to show.</p>';
+    }
+  }
+  const manageLocationsBtn = document.getElementById('manageLocationsBtn');
+  const locationManagePanel = document.getElementById('locationManagePanel');
+  manageLocationsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    locationManagePanel.classList.toggle('open');
+    if(locationManagePanel.classList.contains('open')) renderLocationManagePanel();
+  });
+  document.addEventListener('click', (e) => {
+    if(!locationManagePanel.contains(e.target) && e.target !== manageLocationsBtn){
+      locationManagePanel.classList.remove('open');
+    }
   });
 
   async function loadState(){
@@ -1791,17 +2154,13 @@
     state.gymName = e.target.value.trim();
     commit();
   });
-  document.getElementById('gymLocationInput').addEventListener('change', (e) => {
-    state.location = e.target.value.trim();
-    commit();
-  });
   function updateMainTitle(){
     let title = 'Gym Org Pro';
     if(state.gymName) title += ' - ' + state.gymName;
-    if(state.location) title += ' - ' + state.location;
+    const loc = (state.locations || []).find(l => l.id === state.activeLocationId);
+    if(loc && loc.name) title += ' - ' + loc.name;
     document.getElementById('mainTitle').textContent = title;
     document.getElementById('gymNameInput').value = state.gymName || '';
-    document.getElementById('gymLocationInput').value = state.location || '';
   }
 
   // ---------------- cascade cleanup ----------------
@@ -1872,6 +2231,43 @@
       el.appendChild(row);
     });
   }
+  document.getElementById('addLevelBtn').addEventListener('click', () => {
+    state.coachLevels.push({id: uid('lvl'), name: 'New Level'});
+    commit();
+  });
+
+  // ===================== SETUP: Skills =====================
+  function renderSkillList(){
+    const el = document.getElementById('skillList');
+    if(!el) return;
+    el.innerHTML = '';
+    if(state.skills.length === 0){
+      el.innerHTML = '<p class="empty-note">No skills yet — add one below.</p>';
+    }
+    state.skills.forEach((sk, idx) => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      makeRowDraggable(row, state.skills, idx);
+
+      const nameInput = document.createElement('input');
+      nameInput.className = 'name-input'; nameInput.value = sk.name || '';
+      nameInput.placeholder = 'e.g. Cartwheel';
+      nameInput.addEventListener('change', () => { sk.name = nameInput.value || sk.name; commit(); });
+      row.appendChild(nameInput);
+
+      const rm = document.createElement('button');
+      rm.className = 'remove-btn'; rm.textContent = 'Remove';
+      rm.addEventListener('click', () => { state.skills.splice(idx, 1); commit(); });
+      row.appendChild(rm);
+
+      el.appendChild(row);
+    });
+  }
+  document.getElementById('addSkillBtn').addEventListener('click', () => {
+    state.skills.push({id: uid('sk'), name: 'New Skill'});
+    commit();
+  });
+
   function renderLpWarmupList(){
     const el = document.getElementById('lpWarmupList');
     if(!el) return;
@@ -3430,9 +3826,9 @@
         // starting position, matching the template's "Key: Coach position" cue
         const firstRow = docxTableRow([
           docxTableCell('', {shade: 'C2D69B', width: colW}),
-          docxTableCell('', {shade: 'C2D69B', width: colW}),
-          docxTableCell('', {width: colW}),
-          docxTableCell('', {width: colW}),
+          docxTableCell(c.skillText || '', {shade: 'C2D69B', width: colW}),
+          docxTableCell(c.kcpText || '', {width: colW}),
+          docxTableCell(c.safetyText || '', {width: colW}),
         ]);
         const restRows = Array.from({length: 4}, () => docxTableRow(['', '', '', ''].map(() => docxTableCell('', {width: colW}))));
         parts.push(docxTable([headerRow, firstRow, ...restRows], [colW, colW, colW, colW]));
@@ -3443,7 +3839,7 @@
     parts.push(docxSectionBar('Warm Down', '808080', 'FFFFFF'));
     parts.push(docxTable([
       docxTableRow([docxTableCell('Notes', {shade: 'BFBFBF', bold: true, width: LP_PAGE_CONTENT_WIDTH})]),
-      docxTableRow([docxTableCell('', {width: LP_PAGE_CONTENT_WIDTH})]),
+      docxTableRow([docxTableCell(d.warmDownText || '', {width: LP_PAGE_CONTENT_WIDTH})]),
     ], [LP_PAGE_CONTENT_WIDTH]));
 
     parts.push(docxParagraph(' ', {spacingBefore: 120}));
@@ -3509,6 +3905,7 @@
       }
     }
     return blocks.map(b => ({
+      stationId: b.stationId || '',
       name: b.stationId ? ((state.stations.find(s => s.id === b.stationId) || {}).name || 'Open') : 'Open',
       duration: b.ticks * state.rotationLength
     }));
@@ -3531,7 +3928,34 @@
   let lpHiddenSquads = new Set();
   function renderLessonPlansFilter(){
     renderSquadFilter('lpSquadFilter', lpHiddenSquads, renderLessonPlansFilter);
+    const sel = document.getElementById('lpLoadFromBlock');
+    if(sel){
+      const prevValue = sel.value;
+      sel.innerHTML = '<option value="">— choose a block —</option>';
+      state.calendarBlocks.slice().sort((a,b) => a.startDate.localeCompare(b.startDate)).forEach(block => {
+        const opt = document.createElement('option');
+        opt.value = block.id;
+        opt.textContent = `${block.name} (${block.startDate} – ${block.endDate})`;
+        sel.appendChild(opt);
+      });
+      sel.value = prevValue;
+    }
   }
+  document.getElementById('lpLoadFromBlock').addEventListener('change', (e) => {
+    const block = state.calendarBlocks.find(b => b.id === e.target.value);
+    if(!block) return;
+    document.getElementById('lpTermLabel').value = block.name;
+    document.getElementById('lpFromDate').value = block.startDate;
+    document.getElementById('lpToDate').value = block.endDate;
+    document.getElementById('lpAnchorMonday').value = block.startDate;
+    if(block.squadIds && block.squadIds.length){
+      lpHiddenSquads = new Set(state.squads.filter(s => !block.squadIds.includes(s.id)).map(s => s.id));
+    } else {
+      lpHiddenSquads = new Set();
+    }
+    renderLessonPlansFilter();
+    showFlash(`Loaded "${block.name}"'s dates and squads below.`);
+  });
 
   document.getElementById('lpGenerateBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('lpStatus');
@@ -3585,6 +4009,17 @@
           const coach = state.coaches.find(c => c.id === session.coachId);
           const asst = state.coaches.find(c => c.id === session.assistantCoachId);
 
+          // Pull in whatever was saved from the Calendar tab for this exact
+          // date/squad/session, if anything — otherwise the circuit table and
+          // warm-down cells are left blank, same as before this existed.
+          const storedPlan = ((state.lessonPlans[isoDateStr(d)] || {})[squad.id] || {})[session.id];
+          const enrichedCircuits = circuits.map((c, idx) => {
+            const sc = storedPlan && storedPlan.circuits && storedPlan.circuits[idx];
+            if(!sc) return c;
+            const skillText = (sc.skillIds || []).map(id => (state.skills.find(sk => sk.id === id) || {}).name).filter(Boolean).join(', ');
+            return Object.assign({}, c, {skillText, kcpText: sc.kcp || '', safetyText: sc.safety || ''});
+          });
+
           const xml = buildLessonPlanDocumentXml({
             gymTitle, termLabel, weekNum,
             weekdayName: DAY_NAMES_FULL[weekday],
@@ -3593,7 +4028,8 @@
             squadName: squad.name, duration: session.duration,
             coachName: coach ? coach.name : 'UNASSIGNED',
             assistantName: asst ? asst.name : '—',
-            circuits, warmupItems: state.lessonPlanWarmup, bannerAspect
+            circuits: enrichedCircuits, warmupItems: state.lessonPlanWarmup, bannerAspect,
+            warmDownText: storedPlan ? storedPlan.warmDown : ''
           });
           const docBlob = await createMinimalDocxBlob(xml, bannerB64, bannerExt);
 
@@ -3619,6 +4055,619 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     statusEl.textContent = `Done — ${count} lesson plan(s) generated in your downloads.`;
+  });
+
+  // ===================== CALENDAR =====================
+  function isoDateStr(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+
+  let selectedCalendarBlockId = null;
+  let editingCalendarBlockId = null; // null = the create/edit form is in "new block" mode
+  let calendarHiddenSquads = new Set();
+  let openLessonPlanCtx = null; // {dateStr, squadId, sessionId, circuits:[{stationId,name,duration,skillIds,kcp,safety}], warmDown}
+
+  function getSelectedCalendarBlock(){
+    return state.calendarBlocks.find(b => b.id === selectedCalendarBlockId) || null;
+  }
+
+  function renderCalendarTab(){
+    renderCalendarBlockSwitch();
+    renderCalendarSquadFilter();
+    renderCalendarSessionList();
+  }
+
+  function renderCalendarBlockSwitch(){
+    const sel = document.getElementById('calendarBlockSelect');
+    if(!sel) return;
+    if(!selectedCalendarBlockId || !state.calendarBlocks.some(b => b.id === selectedCalendarBlockId)){
+      const todayStr = isoDateStr(new Date());
+      const current = state.calendarBlocks.find(b => b.startDate <= todayStr && todayStr <= b.endDate);
+      selectedCalendarBlockId = (current || state.calendarBlocks[0] || {}).id || null;
+    }
+    sel.innerHTML = '';
+    state.calendarBlocks.slice().sort((a,b) => a.startDate.localeCompare(b.startDate)).forEach(block => {
+      const opt = document.createElement('option');
+      opt.value = block.id;
+      opt.textContent = `${block.name} (${block.startDate} – ${block.endDate})`;
+      if(block.id === selectedCalendarBlockId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    const hasBlocks = state.calendarBlocks.length > 0;
+    document.getElementById('calendarBlockEmptyNote').style.display = hasBlocks ? 'none' : '';
+    document.getElementById('calendarBlockContent').style.display = hasBlocks ? '' : 'none';
+    renderCalendarBlockManageList();
+  }
+  document.getElementById('calendarBlockSelect').addEventListener('change', (e) => {
+    selectedCalendarBlockId = e.target.value;
+    calendarViewAnchorDate = null;
+    renderCalendarSessionList();
+  });
+
+  // ---- create/edit block form (Scheduler+) ----
+  function renderCalBlockSquadChecks(selectedIds){
+    const el = document.getElementById('calBlockSquadChecks');
+    el.innerHTML = '';
+    state.squads.forEach(s => {
+      const label = document.createElement('label');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = s.id;
+      cb.checked = selectedIds.includes(s.id);
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(s.name));
+      el.appendChild(label);
+    });
+  }
+  function resetCalBlockForm(){
+    editingCalendarBlockId = null;
+    document.getElementById('calendarBlockFormTitle').textContent = 'New block';
+    document.getElementById('calBlockName').value = '';
+    document.getElementById('calBlockStart').value = '';
+    document.getElementById('calBlockEnd').value = '';
+    renderCalBlockSquadChecks([]);
+    document.getElementById('calBlockSaveBtn').textContent = 'Create Block';
+    document.getElementById('calBlockCancelBtn').style.display = 'none';
+  }
+  function loadCalBlockIntoForm(block){
+    editingCalendarBlockId = block.id;
+    document.getElementById('calendarBlockFormTitle').textContent = 'Edit block';
+    document.getElementById('calBlockName').value = block.name;
+    document.getElementById('calBlockStart').value = block.startDate;
+    document.getElementById('calBlockEnd').value = block.endDate;
+    renderCalBlockSquadChecks(block.squadIds || []);
+    document.getElementById('calBlockSaveBtn').textContent = 'Save Changes';
+    document.getElementById('calBlockCancelBtn').style.display = '';
+  }
+  const calendarBlockCreatePanel = document.getElementById('calendarBlockCreatePanel');
+  const newCalendarBlockBtn = document.getElementById('newCalendarBlockBtn');
+  newCalendarBlockBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetCalBlockForm();
+    calendarBlockCreatePanel.classList.toggle('open');
+  });
+  document.getElementById('calBlockCancelBtn').addEventListener('click', resetCalBlockForm);
+  // True if any lesson plan is saved for this squad on any date within
+  // [startDate, endDate] — used to warn before a squad is dropped from a
+  // block it's currently part of.
+  function squadHasLessonPlansInRange(squadId, startDate, endDate){
+    return Object.keys(state.lessonPlans).some(dateStr => {
+      if(dateStr < startDate || dateStr > endDate) return false;
+      const forSquad = (state.lessonPlans[dateStr] || {})[squadId];
+      return forSquad && Object.keys(forSquad).length > 0;
+    });
+  }
+
+  document.getElementById('calBlockSaveBtn').addEventListener('click', () => {
+    const name = document.getElementById('calBlockName').value.trim();
+    const startDate = document.getElementById('calBlockStart').value;
+    const endDate = document.getElementById('calBlockEnd').value;
+    if(!name || !startDate || !endDate){ showFlash('Name, start date, and end date are all required.'); return; }
+    if(endDate < startDate){ showFlash('End date is before the start date.'); return; }
+    const squadIds = Array.from(document.querySelectorAll('#calBlockSquadChecks input:checked')).map(cb => cb.value);
+    if(editingCalendarBlockId){
+      const block = state.calendarBlocks.find(b => b.id === editingCalendarBlockId);
+      if(!block) return;
+      const oldEffective = (block.squadIds && block.squadIds.length) ? block.squadIds : state.squads.map(s => s.id);
+      const newEffective = squadIds.length ? squadIds : state.squads.map(s => s.id);
+      const removedIds = oldEffective.filter(id => !newEffective.includes(id));
+      const removedWithPlans = removedIds.filter(id => squadHasLessonPlansInRange(id, block.startDate, block.endDate));
+      if(removedWithPlans.length){
+        const names = removedWithPlans.map(id => (state.squads.find(s => s.id === id) || {}).name || id).join(', ');
+        const ok = window.confirm(
+          `${names} ${removedWithPlans.length === 1 ? 'has' : 'have'} saved lesson plan(s) within this block's dates. ` +
+          `Removing ${removedWithPlans.length === 1 ? 'it' : 'them'} from the block won't delete those lesson plans — they're kept by date — ` +
+          `but they'll stop showing here unless the squad is added back. Continue?`
+        );
+        if(!ok) return;
+      }
+      block.name = name; block.startDate = startDate; block.endDate = endDate; block.squadIds = squadIds;
+    } else {
+      const block = {id: uid('calb'), name, startDate, endDate, squadIds};
+      state.calendarBlocks.push(block);
+      selectedCalendarBlockId = block.id;
+    }
+    calendarViewAnchorDate = null;
+    resetCalBlockForm();
+    calendarBlockCreatePanel.classList.remove('open');
+    commit();
+  });
+
+  // ---- manage (rename/delete) existing blocks (Admin only) ----
+  function renderCalendarBlockManageList(){
+    const el = document.getElementById('calendarBlockManageList');
+    if(!el) return;
+    el.innerHTML = '';
+    const blocks = state.calendarBlocks.slice().sort((a,b) => a.startDate.localeCompare(b.startDate));
+    blocks.forEach(block => {
+      const row = document.createElement('div');
+      row.className = 'roster-row' + (block.id === selectedCalendarBlockId ? ' is-current' : '');
+      const nameEl = document.createElement('span');
+      nameEl.className = 'roster-row-name';
+      nameEl.textContent = `${block.name} (${block.startDate} – ${block.endDate})`;
+      row.appendChild(nameEl);
+
+      const actions = document.createElement('div');
+      actions.className = 'roster-row-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button'; editBtn.className = 'roster-row-btn'; editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', (e) => {
+        // Without this, the click bubbles up to the document-level "close
+        // panels when clicking outside them" listener below, which sees this
+        // click's target isn't inside calendarBlockCreatePanel and immediately
+        // removes the 'open' class this handler just added — the panel opens
+        // and closes within the same click, looking like Edit does nothing.
+        e.stopPropagation();
+        loadCalBlockIntoForm(block);
+        document.getElementById('calendarBlockManagePanel').classList.remove('open');
+        calendarBlockCreatePanel.classList.add('open');
+      });
+      actions.appendChild(editBtn);
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button'; delBtn.className = 'roster-row-btn danger'; delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', () => {
+        const ok = window.confirm(`Delete "${block.name}"? Sessions' saved lesson plans are unaffected — they're stored by date, not by block.`);
+        if(!ok) return;
+        state.calendarBlocks = state.calendarBlocks.filter(b => b.id !== block.id);
+        if(selectedCalendarBlockId === block.id) selectedCalendarBlockId = null;
+        commit();
+      });
+      actions.appendChild(delBtn);
+      row.appendChild(actions);
+      el.appendChild(row);
+    });
+    if(blocks.length === 0){
+      el.innerHTML = '<p class="empty-note" style="margin:4px 0;">No blocks to show.</p>';
+    }
+  }
+  const manageCalendarBlocksBtn = document.getElementById('manageCalendarBlocksBtn');
+  const calendarBlockManagePanel = document.getElementById('calendarBlockManagePanel');
+  manageCalendarBlocksBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    calendarBlockManagePanel.classList.toggle('open');
+    if(calendarBlockManagePanel.classList.contains('open')) renderCalendarBlockManageList();
+  });
+  document.addEventListener('click', (e) => {
+    if(!calendarBlockManagePanel.contains(e.target) && e.target !== manageCalendarBlocksBtn){
+      calendarBlockManagePanel.classList.remove('open');
+    }
+    if(!calendarBlockCreatePanel.contains(e.target) && e.target !== newCalendarBlockBtn){
+      calendarBlockCreatePanel.classList.remove('open');
+    }
+  });
+
+  // ---- session list ----
+  let calendarViewMode = 'list'; // 'list' | 'week' | 'month'
+  let calendarViewAnchorDate = null; // ISO date string; which week/month is showing. null = default (today, clamped to block range)
+
+  // The block's own squad roster (before the filter's hidden-set is applied)
+  // — squads NOT on the block can never show sessions here regardless of the
+  // filter, so the filter itself only lists these, not every squad in Setup.
+  function blockSquadRoster(block){
+    return (block.squadIds && block.squadIds.length) ? state.squads.filter(s => block.squadIds.includes(s.id)) : state.squads;
+  }
+  function renderCalendarSquadFilter(){
+    const block = getSelectedCalendarBlock();
+    // Passing renderCalendarSquadFilter itself (not just renderCalendarSessionList)
+    // as onChange is what makes Select All/Deselect All redraw their own
+    // checkboxes — renderSquadFilter only repaints on a fresh call to itself.
+    renderSquadFilter('calendarSquadFilter', calendarHiddenSquads, () => {
+      renderCalendarSquadFilter();
+      renderCalendarSessionList();
+    }, block ? blockSquadRoster(block) : []);
+  }
+  function includedCalendarSquads(block){
+    return blockSquadRoster(block).filter(s => !calendarHiddenSquads.has(s.id));
+  }
+  function sessionsForDate(d, squads){
+    const weekday = appWeekdayOfDate(d);
+    const rows = [];
+    squads.forEach(s => {
+      ((state.schedule[s.id]||{})[weekday]||[]).forEach(session => rows.push({s, session}));
+    });
+    rows.sort((a,b) => toMinutes(a.session.startTime) - toMinutes(b.session.startTime));
+    return rows;
+  }
+  function buildCalSessionChip(dateStr, s, session, dayIndex){
+    const startMin = toMinutes(session.startTime);
+    const hasPlan = !!(((state.lessonPlans[dateStr]||{})[s.id]||{})[session.id]);
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'cal-session-chip';
+    chip.style.background = s.color;
+    chip.innerHTML = `${s.name} · ${fmt12(startMin)}<span class="chip-status">${hasPlan ? '✓' : '○'}</span>`;
+    chip.addEventListener('click', () => openLessonPlanModal(dateStr, s.id, session.id, dayIndex));
+    return chip;
+  }
+  // Clamps calendarViewAnchorDate into [block.startDate, block.endDate],
+  // defaulting to today if nothing's been picked yet and today falls in range.
+  function resolveCalendarAnchor(block){
+    let anchor = calendarViewAnchorDate;
+    if(!anchor){
+      const todayStr = isoDateStr(new Date());
+      anchor = (todayStr >= block.startDate && todayStr <= block.endDate) ? todayStr : block.startDate;
+    }
+    if(anchor < block.startDate) anchor = block.startDate;
+    if(anchor > block.endDate) anchor = block.endDate;
+    calendarViewAnchorDate = anchor;
+    return anchor;
+  }
+
+  function renderCalendarSessionList(){
+    const el = document.getElementById('calendarSessionList');
+    if(!el) return;
+    el.innerHTML = '';
+    const block = getSelectedCalendarBlock();
+    const rangeEl = document.getElementById('calendarBlockDateRange');
+    if(rangeEl){
+      rangeEl.textContent = block
+        ? `${block.name}: ${formatDateForHeader(new Date(block.startDate + 'T00:00:00'))} – ${formatDateForHeader(new Date(block.endDate + 'T00:00:00'))}`
+        : '';
+    }
+    if(!block) return;
+    const squads = includedCalendarSquads(block);
+    if(squads.length === 0){ el.innerHTML = '<p class="empty-note">No squads selected — check at least one above.</p>'; return; }
+
+    if(calendarViewMode === 'week') renderCalendarWeekView(el, block, squads);
+    else if(calendarViewMode === 'month') renderCalendarMonthView(el, block, squads);
+    else renderCalendarListView(el, block, squads);
+  }
+
+  function renderCalendarListView(el, block, squads){
+    const anchorMonday = new Date(block.startDate + 'T00:00:00');
+    const endDate = new Date(block.endDate + 'T00:00:00');
+    let any = false;
+
+    for(let d = new Date(anchorMonday); d <= endDate; d.setDate(d.getDate() + 1)){
+      const weekday = appWeekdayOfDate(d);
+      const rows = sessionsForDate(d, squads);
+      if(rows.length === 0) continue;
+      any = true;
+
+      const title = document.createElement('div');
+      title.className = 'roster-day-title';
+      title.textContent = `${DAY_NAMES_FULL[weekday]} — ${formatDateForHeader(d)}`;
+      el.appendChild(title);
+
+      const table = document.createElement('table');
+      table.className = 'roster';
+      const thead = document.createElement('tr');
+      ['Squad','Time','Coach','Lesson Plan'].forEach(h => { const th = document.createElement('th'); th.textContent = h; thead.appendChild(th); });
+      table.appendChild(thead);
+
+      const dateStr = isoDateStr(d);
+      const dayIndex = computeCycleDayIndex(d, anchorMonday);
+
+      rows.forEach(({s, session}) => {
+        const startMin = toMinutes(session.startTime), endMin = startMin + session.duration;
+        const coach = state.coaches.find(c => c.id === session.coachId);
+        const tr = document.createElement('tr');
+        tr.className = 'calendar-session-row';
+        const tdSquad = document.createElement('td');
+        tdSquad.innerHTML = `<span class="swatch" style="background:${s.color};display:inline-block;margin-right:7px;"></span>${s.name}`;
+        tr.appendChild(tdSquad);
+        const tdTime = document.createElement('td'); tdTime.className = 'time-cell';
+        tdTime.textContent = fmt12(startMin) + ' – ' + fmt12(endMin);
+        tr.appendChild(tdTime);
+        const tdCoach = document.createElement('td');
+        tdCoach.textContent = coach ? coach.name : 'UNASSIGNED';
+        tr.appendChild(tdCoach);
+        const tdStatus = document.createElement('td');
+        const hasPlan = !!(((state.lessonPlans[dateStr]||{})[s.id]||{})[session.id]);
+        const badge = document.createElement('span');
+        badge.className = 'lp-status-badge ' + (hasPlan ? 'done' : 'pending');
+        badge.textContent = hasPlan ? '✓ Saved' : 'Not started';
+        tdStatus.appendChild(badge);
+        tr.appendChild(tdStatus);
+        tr.addEventListener('click', () => openLessonPlanModal(dateStr, s.id, session.id, dayIndex));
+        table.appendChild(tr);
+      });
+      el.appendChild(table);
+    }
+
+    if(!any){
+      el.innerHTML = "<p class=\"empty-note\">No sessions fall in this block's date range for the selected squads.</p>";
+    }
+  }
+
+  function renderCalendarWeekView(el, block, squads){
+    const anchor = resolveCalendarAnchor(block);
+    const anchorD = new Date(anchor + 'T00:00:00');
+    const weekStartD = new Date(anchorD);
+    weekStartD.setDate(weekStartD.getDate() - appWeekdayOfDate(anchorD));
+    const weekEndD = new Date(weekStartD); weekEndD.setDate(weekEndD.getDate() + 6);
+    const blockAnchorMonday = new Date(block.startDate + 'T00:00:00');
+
+    const nav = document.createElement('div');
+    nav.className = 'cal-nav';
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button'; prevBtn.className = 'cal-nav-btn'; prevBtn.textContent = '← Prev Week';
+    prevBtn.disabled = isoDateStr(weekStartD) <= block.startDate;
+    prevBtn.addEventListener('click', () => {
+      calendarViewAnchorDate = isoDateStr(new Date(weekStartD.getFullYear(), weekStartD.getMonth(), weekStartD.getDate() - 7));
+      renderCalendarSessionList();
+    });
+    nav.appendChild(prevBtn);
+    const label = document.createElement('span');
+    label.className = 'cal-nav-label';
+    label.textContent = `${formatDateForHeader(weekStartD)} – ${formatDateForHeader(weekEndD)}`;
+    nav.appendChild(label);
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button'; nextBtn.className = 'cal-nav-btn'; nextBtn.textContent = 'Next Week →';
+    nextBtn.disabled = isoDateStr(weekEndD) >= block.endDate;
+    nextBtn.addEventListener('click', () => {
+      calendarViewAnchorDate = isoDateStr(new Date(weekStartD.getFullYear(), weekStartD.getMonth(), weekStartD.getDate() + 7));
+      renderCalendarSessionList();
+    });
+    nav.appendChild(nextBtn);
+    el.appendChild(nav);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-week-grid';
+    let any = false;
+    for(let i = 0; i < 7; i++){
+      const d = new Date(weekStartD.getFullYear(), weekStartD.getMonth(), weekStartD.getDate() + i);
+      const dateStr = isoDateStr(d);
+      const inRange = dateStr >= block.startDate && dateStr <= block.endDate;
+      const col = document.createElement('div');
+      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range');
+      const head = document.createElement('div');
+      head.className = 'cal-day-head';
+      head.innerHTML = `<span>${DAY_NAMES[appWeekdayOfDate(d)]}</span><span class="daynum">${d.getDate()}</span>`;
+      col.appendChild(head);
+      if(inRange){
+        const dayIndex = computeCycleDayIndex(d, blockAnchorMonday);
+        sessionsForDate(d, squads).forEach(({s, session}) => {
+          any = true;
+          col.appendChild(buildCalSessionChip(dateStr, s, session, dayIndex));
+        });
+      }
+      grid.appendChild(col);
+    }
+    el.appendChild(grid);
+    if(!any){
+      const p = document.createElement('p');
+      p.className = 'empty-note'; p.style.marginTop = '12px';
+      p.textContent = 'No sessions this week for the selected squads.';
+      el.appendChild(p);
+    }
+  }
+
+  function renderCalendarMonthView(el, block, squads){
+    const anchor = resolveCalendarAnchor(block);
+    const anchorD = new Date(anchor + 'T00:00:00');
+    const monthStart = new Date(anchorD.getFullYear(), anchorD.getMonth(), 1);
+    const monthEnd = new Date(anchorD.getFullYear(), anchorD.getMonth() + 1, 0);
+    const gridStart = new Date(monthStart); gridStart.setDate(gridStart.getDate() - appWeekdayOfDate(monthStart));
+    const gridEnd = new Date(monthEnd); gridEnd.setDate(gridEnd.getDate() + (6 - appWeekdayOfDate(monthEnd)));
+    const blockAnchorMonday = new Date(block.startDate + 'T00:00:00');
+    const blockStartMonth = new Date(block.startDate + 'T00:00:00'); blockStartMonth.setDate(1);
+    const blockEndMonth = new Date(block.endDate + 'T00:00:00'); blockEndMonth.setDate(1);
+
+    const nav = document.createElement('div');
+    nav.className = 'cal-nav';
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button'; prevBtn.className = 'cal-nav-btn'; prevBtn.textContent = '← Prev Month';
+    prevBtn.disabled = monthStart <= blockStartMonth;
+    prevBtn.addEventListener('click', () => {
+      calendarViewAnchorDate = isoDateStr(new Date(anchorD.getFullYear(), anchorD.getMonth() - 1, 1));
+      renderCalendarSessionList();
+    });
+    nav.appendChild(prevBtn);
+    const label = document.createElement('span');
+    label.className = 'cal-nav-label';
+    label.textContent = `${LP_MONTH_NAMES[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
+    nav.appendChild(label);
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button'; nextBtn.className = 'cal-nav-btn'; nextBtn.textContent = 'Next Month →';
+    nextBtn.disabled = monthStart >= blockEndMonth;
+    nextBtn.addEventListener('click', () => {
+      calendarViewAnchorDate = isoDateStr(new Date(anchorD.getFullYear(), anchorD.getMonth() + 1, 1));
+      renderCalendarSessionList();
+    });
+    nav.appendChild(nextBtn);
+    el.appendChild(nav);
+
+    const dowRow = document.createElement('div');
+    dowRow.className = 'cal-month-grid';
+    DAY_NAMES.forEach(dn => {
+      const lbl = document.createElement('div');
+      lbl.className = 'cal-month-day-label'; lbl.textContent = dn;
+      dowRow.appendChild(lbl);
+    });
+    el.appendChild(dowRow);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-month-grid';
+    let any = false;
+    for(let d = new Date(gridStart); d <= gridEnd; d.setDate(d.getDate() + 1)){
+      const dateStr = isoDateStr(d);
+      const inMonth = d.getMonth() === monthStart.getMonth();
+      const inRange = inMonth && dateStr >= block.startDate && dateStr <= block.endDate;
+      const col = document.createElement('div');
+      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range');
+      const head = document.createElement('div');
+      head.className = 'cal-day-head';
+      head.innerHTML = `<span class="daynum">${d.getDate()}</span>`;
+      col.appendChild(head);
+      if(inRange){
+        const dayIndex = computeCycleDayIndex(d, blockAnchorMonday);
+        sessionsForDate(d, squads).forEach(({s, session}) => {
+          any = true;
+          col.appendChild(buildCalSessionChip(dateStr, s, session, dayIndex));
+        });
+      }
+      grid.appendChild(col);
+    }
+    el.appendChild(grid);
+    if(!any){
+      const p = document.createElement('p');
+      p.className = 'empty-note'; p.style.marginTop = '12px';
+      p.textContent = 'No sessions this month for the selected squads.';
+      el.appendChild(p);
+    }
+  }
+
+  document.querySelectorAll('#calendarViewToggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      calendarViewMode = btn.dataset.calview;
+      calendarViewAnchorDate = null;
+      document.querySelectorAll('#calendarViewToggle button').forEach(b => b.classList.toggle('active', b === btn));
+      renderCalendarSessionList();
+    });
+  });
+
+  // ---- lesson plan editor modal ----
+  function openLessonPlanModal(dateStr, squadId, sessionId, dayIndex){
+    const squad = state.squads.find(s => s.id === squadId);
+    const session = ((state.schedule[squadId]||{})[weekdayOf(dayIndex)]||[]).find(se => se.id === sessionId);
+    if(!squad || !session) return;
+    const circuits = getSquadCircuitsForDay(squadId, dayIndex);
+    const stored = ((state.lessonPlans[dateStr]||{})[squadId]||{})[sessionId] || null;
+
+    openLessonPlanCtx = {
+      dateStr, squadId, sessionId,
+      circuits: circuits.map((c, idx) => {
+        const sc = stored && stored.circuits && stored.circuits[idx];
+        return {
+          stationId: c.stationId, name: c.name, duration: c.duration,
+          skillIds: (sc && sc.skillIds) ? sc.skillIds.slice() : [],
+          kcp: (sc && sc.kcp) || '',
+          safety: (sc && sc.safety) || '',
+        };
+      }),
+      warmDown: (stored && stored.warmDown) || '',
+    };
+
+    const startMin = toMinutes(session.startTime), endMin = startMin + session.duration;
+    const coach = state.coaches.find(c => c.id === session.coachId);
+    document.getElementById('lpModalTitle').textContent = `${squad.name} — ${formatDateForHeader(new Date(dateStr + 'T00:00:00'))}`;
+    document.getElementById('lpModalSub').textContent = `${fmt12(startMin)} – ${fmt12(endMin)} · Coach: ${coach ? coach.name : 'UNASSIGNED'}`;
+    document.getElementById('lpModalWarmDown').value = openLessonPlanCtx.warmDown;
+    renderLpModalCircuits();
+    document.getElementById('lpModalOverlay').classList.add('open');
+  }
+  function renderLpModalCircuits(){
+    const el = document.getElementById('lpModalCircuits');
+    el.innerHTML = '';
+    if(!openLessonPlanCtx) return;
+    if(openLessonPlanCtx.circuits.length === 0){
+      el.innerHTML = '<p class="empty-note">No station rotations found for this squad on this day — set them in the Rotations tab first.</p>';
+      return;
+    }
+    const canEdit = currentRoleRank() >= ROLE_RANK.coach;
+    openLessonPlanCtx.circuits.forEach((c, idx) => {
+      const block = document.createElement('div');
+      block.className = 'lp-circuit-block';
+      const title = document.createElement('p');
+      title.className = 'lp-circuit-title';
+      title.textContent = `Circuit ${idx + 1} — ${c.name} — ${c.duration} min`;
+      block.appendChild(title);
+
+      const chips = document.createElement('div');
+      chips.className = 'lp-skill-chips';
+      if(state.skills.length === 0){
+        const hint = document.createElement('p');
+        hint.className = 'hint'; hint.style.margin = '0 0 10px';
+        hint.textContent = 'No skills defined yet — add some in Setup → Skills.';
+        chips.appendChild(hint);
+      }
+      state.skills.forEach(sk => {
+        const chip = document.createElement('span');
+        chip.className = 'lp-skill-chip' + (c.skillIds.includes(sk.id) ? ' selected' : '');
+        chip.textContent = sk.name;
+        if(canEdit){
+          chip.addEventListener('click', () => {
+            const i = c.skillIds.indexOf(sk.id);
+            if(i === -1) c.skillIds.push(sk.id); else c.skillIds.splice(i, 1);
+            renderLpModalCircuits();
+          });
+        }
+        chips.appendChild(chip);
+      });
+      block.appendChild(chips);
+
+      const kcpField = document.createElement('label');
+      kcpField.className = 'lp-modal-field';
+      kcpField.appendChild(document.createTextNode('KCP (key coaching points)'));
+      const kcpTa = document.createElement('textarea');
+      kcpTa.value = c.kcp; kcpTa.disabled = !canEdit;
+      kcpTa.addEventListener('input', () => { c.kcp = kcpTa.value; });
+      kcpField.appendChild(kcpTa);
+      block.appendChild(kcpField);
+
+      const safetyField = document.createElement('label');
+      safetyField.className = 'lp-modal-field';
+      safetyField.appendChild(document.createTextNode('Safety notes'));
+      const safetyTa = document.createElement('textarea');
+      safetyTa.value = c.safety; safetyTa.disabled = !canEdit;
+      safetyTa.addEventListener('input', () => { c.safety = safetyTa.value; });
+      safetyField.appendChild(safetyTa);
+      block.appendChild(safetyField);
+
+      el.appendChild(block);
+    });
+    document.getElementById('lpModalWarmDown').disabled = !canEdit;
+    document.getElementById('lpModalSaveBtn').style.display = canEdit ? '' : 'none';
+    document.getElementById('lpModalClearBtn').style.display = canEdit ? '' : 'none';
+  }
+  function closeLessonPlanModal(){
+    document.getElementById('lpModalOverlay').classList.remove('open');
+    openLessonPlanCtx = null;
+  }
+  document.getElementById('lpModalCloseBtn').addEventListener('click', closeLessonPlanModal);
+  document.getElementById('lpModalOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'lpModalOverlay') closeLessonPlanModal();
+  });
+  document.getElementById('lpModalWarmDown').addEventListener('input', (e) => {
+    if(openLessonPlanCtx) openLessonPlanCtx.warmDown = e.target.value;
+  });
+  document.getElementById('lpModalSaveBtn').addEventListener('click', () => {
+    if(!openLessonPlanCtx) return;
+    if(currentRoleRank() < ROLE_RANK.coach){ showFlash('Viewers cannot edit lesson plans.'); return; }
+    const {dateStr, squadId, sessionId, circuits, warmDown} = openLessonPlanCtx;
+    if(!state.lessonPlans[dateStr]) state.lessonPlans[dateStr] = {};
+    if(!state.lessonPlans[dateStr][squadId]) state.lessonPlans[dateStr][squadId] = {};
+    state.lessonPlans[dateStr][squadId][sessionId] = {
+      circuits: circuits.map(c => ({stationId: c.stationId, skillIds: c.skillIds.slice(), kcp: c.kcp, safety: c.safety})),
+      warmDown,
+      updatedAt: Date.now(),
+    };
+    showFlash('Lesson plan saved.');
+    closeLessonPlanModal();
+    commit();
+  });
+  document.getElementById('lpModalClearBtn').addEventListener('click', () => {
+    if(!openLessonPlanCtx) return;
+    if(currentRoleRank() < ROLE_RANK.coach){ showFlash('Viewers cannot edit lesson plans.'); return; }
+    const {dateStr, squadId, sessionId} = openLessonPlanCtx;
+    const ok = window.confirm("Clear this session's saved lesson plan?");
+    if(!ok) return;
+    if(state.lessonPlans[dateStr] && state.lessonPlans[dateStr][squadId]){
+      delete state.lessonPlans[dateStr][squadId][sessionId];
+    }
+    closeLessonPlanModal();
+    commit();
   });
 
     // ===================== STAFFING =====================
@@ -3847,8 +4896,29 @@
     return counts;
   }
 
-  function buildUsageTable(counts, activeSquads, groups){
-    const activeGroups = groups.filter(g => activeSquads.some(s => counts[s.id][g.key] > 0));
+  // 'sessions' = raw count of rotationLength-minute blocks (the old behavior);
+  // 'hours' = that same count converted to hours (count * rotationLength / 60).
+  let overviewUnit = 'sessions';
+  function formatUsageValue(n){
+    if(overviewUnit !== 'hours') return String(n);
+    return String(Number((n * state.rotationLength / 60).toFixed(2)));
+  }
+  function setOverviewUnit(unit){
+    overviewUnit = unit;
+    document.getElementById('overviewUnitCheckbox').checked = unit === 'hours';
+    document.querySelectorAll('#overviewUnitToggle .slide-switch-label').forEach(el => {
+      el.classList.toggle('active', el.dataset.overviewunit === unit);
+    });
+    renderOverview();
+  }
+  document.getElementById('overviewUnitCheckbox').addEventListener('change', (e) => {
+    setOverviewUnit(e.target.checked ? 'hours' : 'sessions');
+  });
+  document.querySelectorAll('#overviewUnitToggle .slide-switch-label').forEach(label => {
+    label.addEventListener('click', () => setOverviewUnit(label.dataset.overviewunit));
+  });
+
+  function buildUsageTable(counts, activeSquads, activeGroups){
     if(activeGroups.length === 0){
       const p = document.createElement('p');
       p.className = 'empty-note';
@@ -3863,7 +4933,7 @@
     const thClass = document.createElement('th'); thClass.className = 'class-col'; thClass.textContent = 'Squad';
     trh.appendChild(thClass);
     activeGroups.forEach(g => { const th = document.createElement('th'); th.textContent = g.name; trh.appendChild(th); });
-    const thTotal = document.createElement('th'); thTotal.textContent = 'Total Blocks';
+    const thTotal = document.createElement('th'); thTotal.textContent = overviewUnit === 'hours' ? 'Total Hours' : 'Total Sessions';
     trh.appendChild(thTotal);
     thead.appendChild(trh);
     table.appendChild(thead);
@@ -3879,11 +4949,11 @@
         const n = counts[s.id][g.key];
         total += n;
         const td = document.createElement('td');
-        td.textContent = n;
+        td.textContent = formatUsageValue(n);
         tr.appendChild(td);
       });
       const tdTotal = document.createElement('td');
-      tdTotal.className = 'total-col'; tdTotal.textContent = total;
+      tdTotal.className = 'total-col'; tdTotal.textContent = formatUsageValue(total);
       tr.appendChild(tdTotal);
       tbody.appendChild(tr);
     });
@@ -3913,12 +4983,18 @@
       ['Week 2', d => d >= 7],
       ['Fortnight Total', null],
     ];
-    sections.forEach(([label, filter]) => {
+    const sectionCounts = sections.map(([, filter]) => computeUsageCounts(filter, groups));
+    // Same column set on every one of the three tables (derived from the
+    // fortnight total, the superset of Week 1 + Week 2) so a station used in
+    // only one week doesn't shift the columns out of alignment between tables.
+    const fortnightCounts = sectionCounts[sectionCounts.length - 1];
+    const activeGroups = groups.filter(g => activeSquads.some(s => fortnightCounts[s.id][g.key] > 0));
+    sections.forEach(([label], i) => {
       const title = document.createElement('div');
       title.className = 'roster-day-title';
       title.textContent = label;
       el.appendChild(title);
-      el.appendChild(buildUsageTable(computeUsageCounts(filter, groups), activeSquads, groups));
+      el.appendChild(buildUsageTable(sectionCounts[i], activeSquads, activeGroups));
     });
   }
 
@@ -3927,6 +5003,7 @@
     ensureUserSession();
     applyRoleUI();
     renderUserList();
+    renderLocationSwitcher();
     updateMainTitle();
     document.getElementById('rotationLengthInput').value = state.rotationLength;
     ['rlLabel1','rlLabel2','rlLabel3'].forEach(id => {
@@ -3934,6 +5011,7 @@
       if(el) el.textContent = state.rotationLength;
     });
     renderLevelList();
+    renderSkillList();
     renderSquadList();
     renderStationList();
     renderCoachList();
@@ -3946,6 +5024,7 @@
     renderRotaBoard();
     renderRotaBySquad();
     applyRotaView();
+    renderCalendarTab();
     renderRoster();
     renderCoachRosters();
     renderCoachLoad();
