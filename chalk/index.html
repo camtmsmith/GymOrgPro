@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chalk — Gymnastics Session Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: Inter, system-ui, sans-serif; }
+    .disp { font-family: 'Barlow Semi Condensed', system-ui, sans-serif; }
+    input:focus, select:focus { outline: 2px solid #211a4d; outline-offset: 1px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Data: skills, warm-ups, MAG ALP pathway matrix. Generated from the club's
+       source documents — treat as read-only and regenerate rather than edit. -->
+  <script src="data.js"></script>
+
+  <!-- New in v6: warm-down activities, in the same shape as the warm-up list in
+       data.js. Hand-maintained, so it gets its own file that survives a
+       regeneration of data.js. -->
+  <script src="data-warmdown.js"></script>
+
+  <!-- New in v6: the editable skills library. Keeps a small OVERLAY of this
+       club's edits, additions and apparatus mappings on top of the two files
+       above, in localStorage and (optionally) Firebase. Must load AFTER the
+       data files — it reads them at startup. Delete this file and Chalk falls
+       back to the shipped database, read-only. -->
+  <script src="chalk-library.js"></script>
+
+  <!-- Reads a GymOrgPro backup (file) into the data Chalk needs -->
+  <script src="gymorg-bridge.js"></script>
+
+  <!-- New in V5: read-only LIVE connection to GymOrgPro's Firebase, so a squad's
+       rotation can be pulled with no export/import. Optional — if this file is
+       removed, Chalk silently falls back to file import only. -->
+  <script src="chalk-gymorg-live.js"></script>
+
+  <!-- Skill diagrams as base64. A double-clicked file:// page is not allowed to
+       read its own image FILES, so the bytes must be inlined for the Word export
+       to embed them. The on-screen app still uses images/ directly. -->
+  <script src="images-b64.js"></script>
+
+  <!-- New in v5.2: builds Word (.docx) lesson plans matching GymOrgPro's own
+       export, with the skills (and their diagrams) filled in. No libraries. -->
+  <script src="chalk-docx.js"></script>
+
+  <!-- App runtime: React 18 + ReactDOM + the app, prebundled into one plain
+       script by esbuild. No in-browser Babel, no XHR — works on file:// by
+       double-clicking. Edit app.jsx and rebuild to regenerate app.js. -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Build tooling only — chalk/app.js IS committed, since the app has to run
+# from a plain folder with no install step.
+build/node_modules/
+build/.entry.generated.jsx
+build/package-lock.json
+
+.DS_Store
+Thumbs.db
