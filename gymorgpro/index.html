@@ -1295,7 +1295,10 @@
   // is served from (GitHub Pages, a shared drive, a local folder) with nothing
   // to reconfigure. Point it at an absolute URL only if Chalk is deployed
   // somewhere else entirely.
-  const CHALK_URL = '../chalk/';
+  // Names index.html explicitly rather than ending at the folder. A web server
+  // would serve the directory index either way, but a double-clicked file://
+  // page has no server to do that — the browser just lists the folder instead.
+  const CHALK_URL = '../chalk/index.html';
 
   // ---------------- multi-roster feature flag ----------------
   // The app currently runs as ONE roster per Firebase project, so creating and
