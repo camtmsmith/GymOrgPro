@@ -74,8 +74,10 @@ you deploy Chalk somewhere else entirely.
 
 The skill selector had a Warm-up tab but no warm-down, even though the lesson
 plan and the Word export both had a warm-down block to fill. There's now a
-**Warm-down** tab beside Warm-up, and clicking the warm-down block on the plan
-jumps the selector to it, exactly like every rotation.
+**Warm-down** tab at the end of the apparatus row — warm-up leads, warm-down
+trails, apparatus in between, matching the order a session runs and prints in.
+Clicking the warm-down block on the plan jumps the selector to it, exactly like
+every rotation.
 
 The content lives in `chalk/data-warmdown.js` — eight groups, sequenced in the
 order a warm-down should actually run:

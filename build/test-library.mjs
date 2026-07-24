@@ -47,6 +47,13 @@ console.log("\n2. Warm-up and warm-down are tabs");
 const tabs = LIB.tabsFor(LEVEL);
 ok("Warm-up present", tabs.includes("Warm-up"));
 ok("Warm-down present", tabs.includes("Warm-down"));
+ok("Warm-up is first", tabs[0] === "Warm-up", tabs[0]);
+ok("Warm-down is last", tabs[tabs.length - 1] === "Warm-down", tabs[tabs.length - 1]);
+ok("apparatus sit between them",
+  tabs.slice(1, -1).length === Object.keys(sandbox.CHALK_DATA[LEVEL].apparatus).length,
+  tabs.join(" | "));
+ok("mapping chips use the same order",
+  LIB.allApparatus()[0] === "Warm-up" && LIB.allApparatus().slice(-1)[0] === "Warm-down");
 ok("Warm-down has groups", LIB.sections(LEVEL, "Warm-down").length > 0);
 ok("Warm-down groups have skills", LIB.sections(LEVEL, "Warm-down")[0].skills.length > 0);
 ok("apparatus still listed", tabs.includes("Floor") && tabs.includes("Rings"));

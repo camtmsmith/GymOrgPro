@@ -323,11 +323,13 @@
     // The tabs a level should show: its own apparatus, plus Warm-up/Warm-down,
     // plus any apparatus a coach has created by mapping a skill onto a name
     // that didn't exist yet.
+    // Warm-up leads and warm-down trails, with the apparatus between them —
+    // the order a session actually runs in, and the order the plan prints in.
     tabsFor: function (level) {
       var own = Object.keys(buildLevel(level));
       var baseOrder = Object.keys(baseTabs(level));
       var extras = own.filter(function (t) { return baseOrder.indexOf(t) < 0; });
-      return ["Warm-up", "Warm-down"].concat(baseOrder, extras.sort());
+      return ["Warm-up"].concat(baseOrder, extras.sort(), ["Warm-down"]);
     },
 
     // Resolved [{group, skills:[…]}] for one tab of one level.
@@ -361,7 +363,9 @@
         arr((doc.edits[sid] || {}).apps).forEach(function (n) { if (n) seen[n] = true; });
       });
       delete seen["Warm-up"]; delete seen["Warm-down"];
-      return ["Warm-up", "Warm-down"].concat(Object.keys(seen).sort());
+      // Same order as the selector tabs, so the mapping chips read the way the
+      // tab row does rather than in a second, unrelated order.
+      return ["Warm-up"].concat(Object.keys(seen).sort(), ["Warm-down"]);
     },
 
     groupsFor: function (level, tab) {
