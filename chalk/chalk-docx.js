@@ -194,13 +194,16 @@
   // window.CHALK_IMG (images-b64.js) because a file:// page can't read image files.
   function imageCollector() {
     var lib = global.CHALK_IMG || {};
+    var levelsLib = global.CHALK_LEVELS_IMG || {};
     var used = {}, order = [], nextId = 2; // rId1 is reserved for the banner
     var MAX_CX = 1150000, MAX_CY = 800000; // EMU (~1.2in x 0.83in)
     return {
       lookup: function (fname) {
         if (!fname) return null;
         if (used[fname]) return used[fname];
-        var rec = lib[fname];
+        // Club diagrams are keyed by bare filename; Levels Program pictures by
+        // their "levels-images/…" path. Try both so either kind embeds.
+        var rec = lib[fname] || levelsLib[fname];
         if (!rec || !rec.d) return null;
         var w = rec.w || 120, h = rec.h || 90;
         var scale = Math.min(MAX_CX / (w * 9525), MAX_CY / (h * 9525), 1);

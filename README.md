@@ -1,4 +1,4 @@
-# Gym Suite — GymOrgPro + Chalk (v6.0)
+# Gym Suite — GymOrgPro + Chalk (v6.1)
 
 Two browser apps for running a gymnastics club, in one repository:
 
@@ -28,6 +28,9 @@ connection to it is **read-only** — GymOrgPro stays the single source of truth
 │   ├── app.js            prebundled React + app         ← generated, don't edit
 │   ├── data.js           skills, warm-ups, ALP matrix   ← generated from club docs
 │   ├── data-warmdown.js  warm-down activities           ← hand-maintained
+│   ├── data-levels.js    ALP Levels 1–8 routines (v6)   ← generated from the ALP workbook
+│   ├── data-levels-b64.js  Levels pictures as data, for the Word export ← generated
+│   ├── levels-images/    293 ALP routine pictures       ← generated
 │   ├── chalk-library.js  editable skills library (v6)
 │   ├── gymorg-bridge.js  turns a GymOrgPro roster into rotations
 │   ├── chalk-gymorg-live.js  read-only live link to GymOrgPro's Firebase
@@ -38,7 +41,11 @@ connection to it is **read-only** — GymOrgPro stays the single source of truth
 │
 └── build/
     ├── build.mjs         rebuilds chalk/app.js from chalk/app.jsx
+    ├── build_levels.py   rebuilds data-levels* + levels-images/ from the ALP workbook
     ├── test-library.mjs  headless tests for the skills library
+    ├── test-render.mjs   headless tests that mount the real app
+    ├── test-links.mjs    checks every internal link resolves to a file
+    ├── test-levels.mjs   checks the Levels Program dataset + pictures
     └── package.json
 ```
 
@@ -112,6 +119,35 @@ the same tick, and mapped-in skills are badged with the apparatus they came from
 so nobody wonders why a Floor drill is in the Beam list. Warm-up and warm-down
 count as apparatus here too, so a conditioning drill can be pulled into the
 warm-up, or a stretch can be made available on every apparatus at once.
+
+### 4. The Levels Program tab
+
+The skill selector now has a third mode alongside **Club skills** and **ALP
+Pathway**: **Levels Program**. It carries the Australian Levels Program routines
+(MAG, Levels 1–8) built straight from the ALP workbook — every apparatus, every
+required skill in routine order, with its picture, skill number and value, the
+technical description as expandable KCP, and the typical deductions.
+
+- The routine level is picked independently of the squad's level (it defaults
+  to a guess from the squad name), so a Level 4 squad can be shown a Level 3
+  routine for revision without changing anything else.
+- Apparatus that a level doesn't compete are hidden — e.g. Pommel Horse only
+  appears on Levels 1–5, so the tab simply isn't offered on the higher levels.
+- Ticking a routine skill folds it into the plan exactly like any other skill:
+  it lands in a `{level} routine` group with its KCP as cues, and its picture
+  **embeds in the Word export** just like a club diagram (the pictures are
+  inlined into `data-levels-b64.js` for the same reason `images-b64.js` exists
+  — a double-clicked `file://` page can't read its own image files).
+
+The dataset is generated, never hand-edited. `build/build_levels.py` reads the
+workbook, extracts the in-cell "rich value" pictures, and writes `data-levels.js`,
+`data-levels-b64.js`, and the `levels-images/` folder. Re-run it if the workbook
+changes:
+
+```
+cd build
+python3 build_levels.py ../MAG_ALP_2026-2029_Routines_Level_1_to_8.xlsx ../chalk
+```
 
 ---
 
@@ -226,3 +262,14 @@ the ID encoding, and that all 23 levels resolve without error.
   own editor.
 - **No edit history.** The overlay keeps only the current state plus who last
   changed it. Restoring something from three weeks ago means keeping exports.
+- **The Levels Program is read-only and generated.** It isn't part of the
+  editable library overlay — coach tweaks belong on the club skills, not on the
+  official ALP routines. Change the routines by re-running `build_levels.py`
+  against an updated workbook.
+- **A few Levels deductions join imperfectly.** Where the source cell wrapped a
+  parenthetical clarifier onto its own line, the rejoined sentence can read
+  slightly oddly. It's cosmetic — the deductions field is optional and the skill
+  name, picture, value and technical description are unaffected.
+- **The Levels pictures add ~4 MB of files plus a ~5.2 MB `data-levels-b64.js`.**
+  This mirrors the existing `images/` + `images-b64.js` pattern and only loads
+  when Chalk is opened; it's the price of the Word export working offline.

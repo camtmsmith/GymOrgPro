@@ -10,13 +10,26 @@ const { useState, useEffect, useMemo, useRef } = React;
 
 const CHALK_DATA = window.CHALK_DATA;
 const CHALK_ALP = window.CHALK_ALP || { cols: [], apparatus: {} };
+// New in v6: the Australian Levels Program routines (MAG Levels 1-8), built from
+// the ALP workbook into { "Level 1": { apparatus: { Floor: [skills] } } }. Each
+// skill has name, kcp[], img[] and optional num/value/deductions. Shown under
+// the "Levels Program" tab and ticked into a plan exactly like a club skill.
+const CHALK_LEVELS = window.CHALK_LEVELS || {};
+const LEVELS_KEYS = Object.keys(CHALK_LEVELS);
+const levelsImg = (f) => "levels-images/" + f;
 const GB = window.GymOrgBridge;
 const LIVE = window.ChalkLive; // read-only live connector to GymOrgPro's Firebase (optional; absent = file-only)
 // New in v6: the editable skills library (baseline data.js + a synced overlay of
 // edits, additions and apparatus mappings). Everything the selector shows now
 // comes through here rather than reading CHALK_DATA directly.
 const LIB = window.ChalkLib;
-const imgSrc = (f) => "images/" + f;
+// Club-skill diagrams live in images/ and are referenced by bare filename.
+// Levels Program pictures live in levels-images/ and are stored WITH that folder
+// already on the front (see toggleLevelsSkill), so anything containing a slash
+// is treated as a ready-made path and passed straight through. One helper then
+// covers the selector thumbnail, the lightbox, the plan sidebar and the Word
+// export without each having to know which library a skill came from.
+const imgSrc = (f) => (String(f).indexOf("/") >= 0 ? String(f) : "images/" + f);
 const APP_VERSION = "v6.0";
 const MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const fmtShortDate = (iso) => { const p = String(iso || "").split("-"); return p.length === 3 ? `${+p[2]} ${MONTHS3[+p[1] - 1]}` : iso; };
@@ -120,6 +133,7 @@ const IconUsers = (p) => <Icon {...p} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6
 const IconCalendar = (p) => <Icon {...p} path={<><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" /></>} />;
 const IconEdit = (p) => <Icon {...p} path={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" /></>} />;
 const IconPlus = (p) => <Icon {...p} path={<><path d="M5 12h14" /><path d="M12 5v14" /></>} />;
+const IconMedal = (p) => <Icon {...p} path={<><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15" /><path d="M11 12 5.12 2.2" /><path d="m13 12 5.88-9.8" /><path d="M8 7h8" /><circle cx="12" cy="17" r="5" /><path d="M12 18v-2h-.5" /></>} />;
 const IconCloud = (p) => <Icon {...p} path={<path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 1 0 6.34 12.6 3.5 3.5 0 0 0 6.5 19Z" />} />;
 const IconEye = (p) => <Icon {...p} path={<><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></>} />;
 const IconEyeOff = (p) => <Icon {...p} path={<><path d="M10.7 5.1A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.2 3.1" /><path d="M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /><path d="m2 2 20 20" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></>} />;
@@ -147,6 +161,15 @@ const STATION_SYNONYMS = {
   horizontalbar: "Horizontal Bar", highbar: "Horizontal Bar", hbar: "Horizontal Bar",
 };
 const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z]/g, "");
+// Best-guess ALP routine level from a squad name: pull the first number out of
+// each and match on it, so "MAG Matrix - Level 3" -> "Level 3". Returns "" if
+// nothing lines up, and the caller falls back to the first program level.
+function guessProgLevel(squadName) {
+  const keys = Object.keys(window.CHALK_LEVELS || {});
+  const n = String(squadName || "").match(/\d+/);
+  if (!n) return "";
+  return keys.find((k) => (k.match(/\d+/) || [])[0] === n[0]) || "";
+}
 
 function allChalkApparatus() {
   const set = new Set();
@@ -592,7 +615,12 @@ function ChalkApp() {
   const [openCues, setOpenCues] = useState({});
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lightbox, setLightbox] = useState(null);
-  const [mode, setMode] = useState("club"); // club | alp
+  const [mode, setMode] = useState("club"); // club | alp | levels
+  // Which ALP level's routines the Levels Program tab is showing. Independent of
+  // the squad `level` above — a squad might be training toward Level 3 while
+  // working out of the Level 2 and 3 routines — so it's chosen separately and
+  // defaults to a sensible guess from the squad name.
+  const [progLevel, setProgLevel] = useState(() => guessProgLevel(level) || LEVELS_KEYS[0] || "");
   const [alpIdx, setAlpIdx] = useState(3);
   const [alpFilter, setAlpFilter] = useState("range");
   const [gymorgOpen, setGymorgOpen] = useState(false);
@@ -624,7 +652,13 @@ function ChalkApp() {
   const [deepLink, setDeepLink] = useState(() => deepLinkRef.current ? "loading" : ""); // "" | "loading" | "done" | "error"
 
   const apparatusHasAlp = !!CHALK_ALP.apparatus[tab];
-  useEffect(() => { if (!apparatusHasAlp && mode === "alp") setMode("club"); }, [tab]);
+  // Does the currently-chosen program level have this apparatus? (Levels 6-8
+  // drop Pommel Horse, so the tab is hidden there rather than shown empty.)
+  const levelsHasApp = !!(CHALK_LEVELS[progLevel] && CHALK_LEVELS[progLevel].apparatus && CHALK_LEVELS[progLevel].apparatus[tab] && CHALK_LEVELS[progLevel].apparatus[tab].length);
+  useEffect(() => {
+    if (mode === "alp" && !apparatusHasAlp) setMode("club");
+    if (mode === "levels" && !levelsHasApp) setMode("club");
+  }, [tab, progLevel]);
 
   // Every edit made in the Skills Library bumps a revision; re-rendering on it
   // is what makes an edit (or another coach's edit arriving over Firebase) show
@@ -756,6 +790,34 @@ function ChalkApp() {
       else {
         const cues = [`Family: ${entry.f}`, `Difficulty: ${entry.d || "—"}`, `Pathway skill (${levelLabel})`];
         next[key] = { level, slot: targetSlot, ord: nextOrd(prev, targetSlot), section: sectionName, group: entry.f, name: entry.s, cues, img: [], color: APP_COLORS[sectionName] || NAVY, alp: true };
+      }
+      return next;
+    });
+  }
+
+  // Tick a Levels Program routine skill into the plan. Its KCP becomes the
+  // coaching-point list (exactly what a club skill's cues are), and the optional
+  // skill number / value / deductions are appended as extra cues so they carry
+  // through to the printed plan. The picture comes from levels-images/, so a
+  // path prefix distinguishes it from club-skill images at render/print time.
+  function toggleLevelsSkill(sectionName, progLvl, idx, skill) {
+    const key = slotKey(`LVL::${progLvl}::${sectionName}::${idx}`);
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (next[key]) delete next[key];
+      else {
+        const cues = (skill.kcp || []).slice();
+        const meta = [];
+        if (skill.value) meta.push(`Skill value: ${skill.value}`);
+        if (skill.deductions && skill.deductions.length) meta.push(`Typical deductions: ${skill.deductions.join("; ")}`);
+        cues.push(`${progLvl} routine${skill.num ? ` — ${skill.num}` : ""}`);
+        next[key] = {
+          level, slot: targetSlot, ord: nextOrd(prev, targetSlot),
+          section: sectionName, group: `${progLvl} routine`,
+          name: skill.name, cues: cues.concat(meta),
+          img: (skill.img || []).map((f) => "levels-images/" + f),
+          color: colorFor(sectionName), levels: true,
+        };
       }
       return next;
     });
@@ -1632,12 +1694,15 @@ function ChalkApp() {
             </button>
           </div>
 
-          {apparatusHasAlp && (
+          {(apparatusHasAlp || levelsHasApp) && (
             <div className="flex items-center gap-1 mb-3 bg-white border border-slate-200 rounded-lg p-1 w-max">
-              {[["club", "Club skills"], ["alp", "ALP Pathway"]].map(([y, label]) => (
+              {[["club", "Club skills", <IconDumbbell size={14} />],
+                apparatusHasAlp && ["alp", "ALP Pathway", <IconLayers size={14} />],
+                levelsHasApp && ["levels", "Levels Program", <IconMedal size={14} />]]
+                .filter(Boolean).map(([y, label, icon]) => (
                 <button key={y} onClick={() => setMode(y)} className="disp text-sm font-semibold px-3 py-1 rounded-md flex items-center gap-1.5"
                   style={mode === y ? { background: color, color: "#fff" } : { color: "#475569" }}>
-                  {y === "alp" ? <IconLayers size={14} /> : <IconDumbbell size={14} />} {label}
+                  {icon} {label}
                 </button>
               ))}
             </div>
@@ -1645,6 +1710,9 @@ function ChalkApp() {
 
           {mode === "alp" && apparatusHasAlp ? (
             <AlpView app={tab} color={color} alpIdx={alpIdx} setAlpIdx={setAlpIdx} alpFilter={alpFilter} setAlpFilter={setAlpFilter} selected={selected} toggleAlp={toggleAlpSkill} level={level} slotKey={slotKey} />
+          ) : mode === "levels" && levelsHasApp ? (
+            <LevelsView app={tab} color={color} progLevel={progLevel} setProgLevel={setProgLevel}
+              selected={selected} toggleLevels={toggleLevelsSkill} slotKey={slotKey} setLightbox={setLightbox} />
           ) : (
             <>
               <div className="relative mb-3">
@@ -2069,6 +2137,125 @@ function LessonPlanDoc({ gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, s
 }
 
 // ---------------------------------------------------------------- ALP view -
+// ===========================================================================
+// LEVELS PROGRAM VIEW  (new in v6)
+//
+// The routines from the Australian Levels Program workbook, for the apparatus
+// in the current tab, at whichever level is picked in the dropdown. Each row is
+// a required skill with its picture, technical description (KCP) and — folded
+// away until asked for — its skill number, value and typical deductions.
+//
+// Ticking a row calls the same selection machinery as a club skill, so a plan
+// can freely mix club drills, ALP pathway skills and Levels Program routine
+// skills in one rotation.
+// ===========================================================================
+function LevelsView({ app, color, progLevel, setProgLevel, selected, toggleLevels, slotKey, setLightbox }) {
+  const [search, setSearch] = useState("");
+  const [openKcp, setOpenKcp] = useState({});
+  const levelKeys = Object.keys(CHALK_LEVELS);
+  const skills = (CHALK_LEVELS[progLevel] && CHALK_LEVELS[progLevel].apparatus[app]) || [];
+
+  const term = search.trim().toLowerCase();
+  const shown = term
+    ? skills.filter((s) => (s.name || "").toLowerCase().includes(term)
+        || (s.kcp || []).some((k) => k.toLowerCase().includes(term)))
+    : skills;
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <label className="disp text-[13px] font-semibold text-slate-600">Routine level</label>
+        <select value={progLevel} onChange={(e) => setProgLevel(e.target.value)}
+          className="disp font-semibold bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+          {levelKeys.map((k) => <option key={k} value={k}>{k}</option>)}
+        </select>
+        <span className="text-[12px] text-slate-400">{skills.length} skill{skills.length === 1 ? "" : "s"} on {app}</span>
+      </div>
+
+      <div className="relative mb-3">
+        <IconSearch size={16} className="absolute left-3 top-2.5 text-slate-400" />
+        <input value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder={`Search ${progLevel} ${app.toLowerCase()} skills…`}
+          className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm" />
+      </div>
+
+      <div className="space-y-2 pb-24 lg:pb-4">
+        {shown.length === 0 && (
+          <div className="text-sm text-slate-500 bg-white border border-dashed border-slate-300 rounded-xl p-6 text-center">
+            {skills.length === 0
+              ? `${progLevel} has no ${app} routine in the Levels Program.`
+              : `No ${app} skills match &ldquo;${search}&rdquo;.`}
+          </div>
+        )}
+
+        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          {shown.map((sk, idx) => {
+            const realIdx = skills.indexOf(sk);
+            const key = slotKey(`LVL::${progLevel}::${app}::${realIdx}`);
+            const isSel = !!selected[key];
+            const kcpKey = `${progLevel}::${app}::${realIdx}`;
+            const open = !!openKcp[kcpKey];
+            const thumb = (sk.img || []).map((f) => "levels-images/" + f);
+            return (
+              <div key={realIdx} className="px-3 py-2.5">
+                <div className="flex items-start gap-3">
+                  <button onClick={() => toggleLevels(app, progLevel, realIdx, sk)} aria-pressed={isSel}
+                    className="mt-0.5 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
+                    style={isSel ? { background: color, borderColor: color } : { borderColor: "#cbd5e1" }}
+                    title={isSel ? "Remove from plan" : "Add to plan"}>
+                    {isSel && <IconCheck size={13} className="text-white" />}
+                  </button>
+
+                  {thumb.length > 0 && (
+                    <button onClick={() => setLightbox({ imgs: thumb, name: sk.name })}
+                      className="shrink-0 w-12 h-12 rounded-md border border-slate-200 bg-white overflow-hidden flex items-center justify-center hover:border-slate-400"
+                      title="View picture">
+                      <img src={thumb[0]} alt="" className="max-w-full max-h-full object-contain" />
+                    </button>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <button onClick={() => toggleLevels(app, progLevel, realIdx, sk)}
+                      className="text-left text-sm font-medium text-slate-800 leading-snug block w-full">
+                      {sk.name}
+                    </button>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      {sk.num && <span className="text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5 bg-slate-100 text-slate-500">{sk.num}</span>}
+                      {sk.value && <span className="text-[10px] font-bold uppercase tracking-wide rounded px-1.5 py-0.5" style={{ background: "#f1f5f9", color }}>Value {sk.value}</span>}
+                      {(sk.kcp || []).length > 0 && (
+                        <button onClick={() => setOpenKcp((o) => ({ ...o, [kcpKey]: !o[kcpKey] }))}
+                          className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 inline-flex items-center gap-0.5">
+                          {open ? "Hide" : "Technical description"} <IconChevronDown size={12} className={open ? "rotate-180" : ""} />
+                        </button>
+                      )}
+                    </div>
+
+                    {open && (
+                      <div className="mt-2 space-y-2 text-[13px] text-slate-600 leading-relaxed border-l-2 pl-3" style={{ borderColor: color }}>
+                        <ul className="space-y-1">
+                          {(sk.kcp || []).map((k, i) => <li key={i}>{k}</li>)}
+                        </ul>
+                        {sk.deductions && sk.deductions.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-0.5">Typical deductions</div>
+                            <ul className="space-y-0.5 text-slate-500">
+                              {sk.deductions.map((d, i) => <li key={i}>{d}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function AlpView({ app, color, alpIdx, setAlpIdx, alpFilter, setAlpFilter, selected, toggleAlp, level, slotKey }) {
   const cols = CHALK_ALP.cols || [];
   const entries = CHALK_ALP.apparatus[app] || [];
