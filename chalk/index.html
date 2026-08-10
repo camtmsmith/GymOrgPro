@@ -24,12 +24,6 @@
        regeneration of data.js. -->
   <script src="data-warmdown.js"></script>
 
-  <!-- New in v6: the Australian Levels Program routines (MAG Levels 1-8), built
-       from the ALP workbook by build/build_levels.py. Read-only and generated —
-       re-run the builder if the workbook changes. Pictures are files in
-       levels-images/, referenced by name. -->
-  <script src="data-levels.js"></script>
-
   <!-- New in v6: the editable skills library. Keeps a small OVERLAY of this
        club's edits, additions and apparatus mappings on top of the two files
        above, in localStorage and (optionally) Firebase. Must load AFTER the
@@ -49,11 +43,6 @@
        read its own image FILES, so the bytes must be inlined for the Word export
        to embed them. The on-screen app still uses images/ directly. -->
   <script src="images-b64.js"></script>
-
-  <!-- New in v6: Levels Program pictures as base64 (same shape as CHALK_IMG),
-       so an ALP routine skill's picture embeds in the Word export too. Generated
-       beside data-levels.js; loaded only for the docx path. -->
-  <script src="data-levels-b64.js"></script>
 
   <!-- New in v5.2: builds Word (.docx) lesson plans matching GymOrgPro's own
        export, with the skills (and their diagrams) filled in. No libraries. -->

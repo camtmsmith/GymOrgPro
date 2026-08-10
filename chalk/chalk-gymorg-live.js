@@ -42,6 +42,7 @@
   var SDK_URLS = [
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js",
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
   ];
 
   var app = null;          // the initialized firebase app
@@ -90,6 +91,16 @@
       } else {
         app = global.firebase.initializeApp(FIREBASE_CONFIG);
       }
+      // The database rules now require auth != null on every path, so sign
+      // in anonymously before touching /rosters or /rosterIndex. If
+      // GymOrgPro's own script already signed this app in (default app is
+      // shared), this resolves immediately.
+      await new Promise(function (resolve, reject) {
+        app.auth().onAuthStateChanged(function (user) {
+          if (user) { resolve(); return; }
+          app.auth().signInAnonymously().catch(reject);
+        }, reject);
+      });
       return true;
     })();
     return readyPromise;

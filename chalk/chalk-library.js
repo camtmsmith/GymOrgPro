@@ -85,6 +85,7 @@
   var SDK_URLS = [
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js",
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
   ];
 
   // ------------------------------------------------------------------ util --
@@ -552,7 +553,14 @@
       // chalk-gymorg-live.js, which owns the default app.
       var existing = (global.firebase.apps || []).filter(function (a) { return a.name === "chalklib"; })[0];
       fbApp = existing || global.firebase.initializeApp(FIREBASE_CONFIG, "chalklib");
-      return fbApp.database();
+      // Named app, so it has its own auth state — sign in anonymously so the
+      // rules' auth != null check passes for reads/writes to /chalkLibrary.
+      return new Promise(function (resolve, reject) {
+        fbApp.auth().onAuthStateChanged(function (user) {
+          if (user) { resolve(); return; }
+          fbApp.auth().signInAnonymously().catch(reject);
+        }, reject);
+      }).then(function () { return fbApp.database(); });
     }).catch(function (e) { dbPromise = null; throw e; });
     return dbPromise;
   }

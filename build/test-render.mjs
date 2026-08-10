@@ -37,7 +37,7 @@ function run(file) {
 }
 
 // Same order as chalk/index.html.
-for (const f of ["data.js", "data-warmdown.js", "data-levels.js", "chalk-library.js", "gymorg-bridge.js", "chalk-docx.js", "app.js"]) {
+for (const f of ["data.js", "data-warmdown.js", "chalk-library.js", "gymorg-bridge.js", "chalk-docx.js", "app.js"]) {
   try { run(f); }
   catch (e) { console.log(`  FAIL loading ${f}: ${e.message}`); process.exit(1); }
 }
@@ -125,44 +125,6 @@ if (nameInput) {
   }
 }
 ok("no errors adding", errors.length === 0, errors.slice(0, 2).join(" | "));
-
-console.log("\n8. Levels Program tab");
-// Close the library, get back to the selector, and land on an apparatus that
-// exists in the Levels Program (Floor is in every level).
-const backBtns = buttons();
-const closeX = root.querySelector('.fixed button svg')?.closest("button");
-if (closeX) await click(closeX);
-const floorTab = byText("Floor");
-if (floorTab) await click(floorTab);
-ok("Levels Program data loaded", Object.keys(window.CHALK_LEVELS || {}).length === 8, `${Object.keys(window.CHALK_LEVELS || {}).length} levels`);
-const levelsPill = byText("Levels Program");
-ok("Levels Program pill shown on Floor", !!levelsPill);
-if (levelsPill) {
-  await click(levelsPill);
-  ok("routine level selector appears", text().includes("Routine level"));
-  ok("a routine skill is listed", /skill|routine|Forward|Handstand|Roll/i.test(text()));
-  ok("no errors entering Levels view", errors.length === 0, errors.slice(0, 2).join(" | "));
-  // Tick the first Levels skill into the plan.
-  const boxes = Array.from(root.querySelectorAll('button[aria-pressed]'));
-  ok("Levels skills have checkboxes", boxes.length > 0, `${boxes.length}`);
-  if (boxes.length) {
-    const before = window.__lvlSel = Array.from(root.querySelectorAll('button[aria-pressed="true"]')).length;
-    await click(boxes[0]);
-    const after = Array.from(root.querySelectorAll('button[aria-pressed="true"]')).length;
-    ok("ticking a Levels skill selects it", after === before + 1, `${before} -> ${after}`);
-  }
-  // Expand a technical description.
-  const kcpToggle = buttons().find((b) => (b.textContent || "").includes("Technical description"));
-  ok("technical description is expandable", !!kcpToggle);
-  if (kcpToggle) { await click(kcpToggle); ok("no errors expanding KCP", errors.length === 0, errors.slice(0, 1).join(" | ")); }
-}
-
-console.log("\n9. Pommel Horse hides Levels Program on Levels 6-8");
-// Level 6+ has no pommel routine, so the pill should not appear there. We can't
-// easily switch squad level in this harness, so assert the data shape instead.
-const l7 = window.CHALK_LEVELS["Level 7"];
-ok("Level 7 has no Pommel Horse routine", !(l7 && l7.apparatus["Pommel Horse"]));
-ok("Level 1 does have Pommel Horse", !!(window.CHALK_LEVELS["Level 1"].apparatus["Pommel Horse"]));
 
 console.log(`\n${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

@@ -1086,7 +1086,7 @@
   const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const PALETTE = ['#B5292E','#1F7A5C','#C9A227','#2A5CAA','#7A4FA3','#B5602E','#3E8E8E','#8C3F63','#4B7B2A','#A6437A'];
   const STORAGE_KEY = 'gymorgpro2-state-v1'; // new standalone app — separate namespace from the old test site's local/browser cache
-  const APP_VERSION = 'v6.1';
+  const APP_VERSION = 'v6.0';
   document.getElementById('versionTag').textContent = '';
 
   // ---------------- shared-password access gate ----------------
@@ -1343,7 +1343,20 @@
     try{
       await loadScriptTag('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
       await loadScriptTag('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+      await loadScriptTag('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');
       firebase.initializeApp(FIREBASE_CONFIG);
+      // Anonymous auth: the database rules now require auth != null on every
+      // path (see database.rules.json / README "Firebase rules"), so every
+      // client — GymOrgPro and Chalk alike — has to sign in before it can
+      // read or write. This doesn't identify individual coaches, it just
+      // keeps the database closed to anyone without the app's Firebase
+      // config (i.e. random bots scanning for open databases).
+      await new Promise((resolve, reject) => {
+        firebase.auth().onAuthStateChanged((user) => {
+          if(user){ resolve(); return; }
+          firebase.auth().signInAnonymously().catch(reject);
+        }, reject);
+      });
       firebaseSdkReady = true;
       return true;
     }catch(e){
