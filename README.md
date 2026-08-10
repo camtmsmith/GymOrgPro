@@ -1,4 +1,4 @@
-# Gym Suite — GymOrgPro + Chalk (v6.1)
+# Gym Suite — GymOrgPro + Chalk (v6.0)
 
 Two browser apps for running a gymnastics club, in one repository:
 
@@ -28,9 +28,6 @@ connection to it is **read-only** — GymOrgPro stays the single source of truth
 │   ├── app.js            prebundled React + app         ← generated, don't edit
 │   ├── data.js           skills, warm-ups, ALP matrix   ← generated from club docs
 │   ├── data-warmdown.js  warm-down activities           ← hand-maintained
-│   ├── data-levels.js    ALP Levels 1–8 routines (v6)   ← generated from the ALP workbook
-│   ├── data-levels-b64.js  Levels pictures as data, for the Word export ← generated
-│   ├── levels-images/    293 ALP routine pictures       ← generated
 │   ├── chalk-library.js  editable skills library (v6)
 │   ├── gymorg-bridge.js  turns a GymOrgPro roster into rotations
 │   ├── chalk-gymorg-live.js  read-only live link to GymOrgPro's Firebase
@@ -41,11 +38,7 @@ connection to it is **read-only** — GymOrgPro stays the single source of truth
 │
 └── build/
     ├── build.mjs         rebuilds chalk/app.js from chalk/app.jsx
-    ├── build_levels.py   rebuilds data-levels* + levels-images/ from the ALP workbook
     ├── test-library.mjs  headless tests for the skills library
-    ├── test-render.mjs   headless tests that mount the real app
-    ├── test-links.mjs    checks every internal link resolves to a file
-    ├── test-levels.mjs   checks the Levels Program dataset + pictures
     └── package.json
 ```
 
@@ -120,35 +113,6 @@ so nobody wonders why a Floor drill is in the Beam list. Warm-up and warm-down
 count as apparatus here too, so a conditioning drill can be pulled into the
 warm-up, or a stretch can be made available on every apparatus at once.
 
-### 4. The Levels Program tab
-
-The skill selector now has a third mode alongside **Club skills** and **ALP
-Pathway**: **Levels Program**. It carries the Australian Levels Program routines
-(MAG, Levels 1–8) built straight from the ALP workbook — every apparatus, every
-required skill in routine order, with its picture, skill number and value, the
-technical description as expandable KCP, and the typical deductions.
-
-- The routine level is picked independently of the squad's level (it defaults
-  to a guess from the squad name), so a Level 4 squad can be shown a Level 3
-  routine for revision without changing anything else.
-- Apparatus that a level doesn't compete are hidden — e.g. Pommel Horse only
-  appears on Levels 1–5, so the tab simply isn't offered on the higher levels.
-- Ticking a routine skill folds it into the plan exactly like any other skill:
-  it lands in a `{level} routine` group with its KCP as cues, and its picture
-  **embeds in the Word export** just like a club diagram (the pictures are
-  inlined into `data-levels-b64.js` for the same reason `images-b64.js` exists
-  — a double-clicked `file://` page can't read its own image files).
-
-The dataset is generated, never hand-edited. `build/build_levels.py` reads the
-workbook, extracts the in-cell "rich value" pictures, and writes `data-levels.js`,
-`data-levels-b64.js`, and the `levels-images/` folder. Re-run it if the workbook
-changes:
-
-```
-cd build
-python3 build_levels.py ../MAG_ALP_2026-2029_Routines_Level_1_to_8.xlsx ../chalk
-```
-
 ---
 
 ## Why the skills database did *not* move into Firebase
@@ -198,22 +162,35 @@ with changes attributed.
 
 ### Firebase rules
 
-Sharing writes to a new path. If the database is still in test mode it already
-works; if you lock it down, keep:
+The database no longer runs in test mode (test mode auto-locks itself after 30
+days). All three Firebase-touching files — `gymorgpro/index.html`,
+`chalk/chalk-gymorg-live.js`, and `chalk/chalk-library.js` — now sign in
+anonymously on connect, and the rules require that sign-in on every path:
 
 ```json
 {
   "rules": {
-    "rosters":      { ".read": true },
-    "rosterIndex":  { ".read": true },
-    "chalkLibrary": { ".read": true, ".write": true }
+    ".read": "auth != null",
+    ".write": "auth != null"
   }
 }
 ```
 
-`chalkLibrary` needs **write** — unlike the rotation data, which Chalk only ever
-reads. Anonymous auth on both apps is the sensible next step if the club wants
-edits restricted to coaches.
+This is also checked into the repo as `database.rules.json`. To apply it:
+Firebase console → Realtime Database → Rules → paste this in → Publish. (Or,
+with the Firebase CLI: `firebase deploy --only database`.)
+
+Anonymous auth has to be turned on once, or `signInAnonymously()` fails and
+every app falls back to local/offline storage: console → Build →
+Authentication → Sign-in method → enable **Anonymous**.
+
+This doesn't add per-person logins or restrict *who* can write — anyone who
+loads the page still gets full read/write, same as before. What it does is
+close the database to the internet at large: only clients carrying this
+app's Firebase config (i.e. this app) can connect at all, which is what
+Firebase's test-mode expiry warning is asking for. If the club later wants
+writes restricted to specific coaches, that needs real (non-anonymous) auth —
+e.g. email/password or Google sign-in — plus rules keyed off `auth.uid`.
 
 ---
 
@@ -262,14 +239,3 @@ the ID encoding, and that all 23 levels resolve without error.
   own editor.
 - **No edit history.** The overlay keeps only the current state plus who last
   changed it. Restoring something from three weeks ago means keeping exports.
-- **The Levels Program is read-only and generated.** It isn't part of the
-  editable library overlay — coach tweaks belong on the club skills, not on the
-  official ALP routines. Change the routines by re-running `build_levels.py`
-  against an updated workbook.
-- **A few Levels deductions join imperfectly.** Where the source cell wrapped a
-  parenthetical clarifier onto its own line, the rejoined sentence can read
-  slightly oddly. It's cosmetic — the deductions field is optional and the skill
-  name, picture, value and technical description are unaffected.
-- **The Levels pictures add ~4 MB of files plus a ~5.2 MB `data-levels-b64.js`.**
-  This mirrors the existing `images/` + `images-b64.js` pattern and only loads
-  when Chalk is opened; it's the price of the Word export working offline.
