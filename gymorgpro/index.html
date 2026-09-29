@@ -399,6 +399,11 @@
   table.overview td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:12px;}
   .class-cell{display:flex;align-items:center;gap:8px;text-align:left;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;}
   .total-col{font-weight:700;color:var(--ink);}
+  table.overview td.heat{color:var(--ink);font-weight:600;border-bottom-color:#fff;}
+  .overview-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 26px;margin-bottom:18px;}
+  .overview-controls .slide-switch{margin-bottom:0;}
+  .heat-legend{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);}
+  .heat-legend-bar{width:92px;height:10px;border-radius:100px;border:1px solid var(--line);background:linear-gradient(90deg,#F8696B 0%,#FFEB84 50%,#63BE7B 100%);}
 
   /* ---- staffing roster ---- */
   table.roster{width:100%;border-collapse:collapse;margin-bottom:6px;}
@@ -816,13 +821,27 @@
     <div class="panel" id="panel-overview">
       <p class="panel-title">Overview — Fortnightly Station Usage</p>
       <p class="panel-desc">Each squad's allocation on each station for this schedule block, broken out by Week 1 and Week 2 so you can check the split is even across the cycle, plus a fortnight total. Stations with no usage for the selected squads are hidden.</p>
-      <div class="slide-switch" id="overviewUnitToggle">
-        <span class="slide-switch-label active" data-overviewunit="sessions">Sessions</span>
-        <span class="slide-switch-track">
-          <input type="checkbox" id="overviewUnitCheckbox">
-          <span class="slide-switch-pill"></span>
-        </span>
-        <span class="slide-switch-label" data-overviewunit="hours">Hours</span>
+      <div class="overview-controls">
+        <div class="slide-switch" id="overviewUnitToggle">
+          <span class="slide-switch-label active" data-overviewunit="sessions">Sessions</span>
+          <span class="slide-switch-track">
+            <input type="checkbox" id="overviewUnitCheckbox">
+            <span class="slide-switch-pill"></span>
+          </span>
+          <span class="slide-switch-label" data-overviewunit="hours">Hours</span>
+        </div>
+        <div class="slide-switch" id="overviewHeatToggle">
+          <span class="slide-switch-label active" data-overviewheat="off">Plain</span>
+          <span class="slide-switch-track">
+            <input type="checkbox" id="overviewHeatCheckbox">
+            <span class="slide-switch-pill"></span>
+          </span>
+          <span class="slide-switch-label" data-overviewheat="on">Heat Map</span>
+        </div>
+        <div class="heat-legend" id="overviewHeatLegend" style="display:none;">
+          <span>Least</span><span class="heat-legend-bar"></span><span>Most</span>
+          <span style="text-transform:none;letter-spacing:0;">— shaded per squad, against that squad's busiest station</span>
+        </div>
       </div>
       <div class="squad-filter" id="overviewSquadFilter"></div>
       <div id="overviewTable"></div>
@@ -6500,6 +6519,37 @@
     label.addEventListener('click', () => setOverviewUnit(label.dataset.overviewunit));
   });
 
+  // Row-scaled heat map: every squad row is shaded against its own busiest
+  // station, so an uneven spread within a squad reads at a glance no matter how
+  // much total time that squad trains. Scaling per row rather than per table
+  // keeps a low-hours squad from being uniformly red next to a heavy one.
+  let overviewHeatmap = false;
+  const HEAT_STOPS = [[248,105,107],[255,235,132],[99,190,123]]; // least -> mid -> most
+  function heatColor(t){
+    const v = Math.max(0, Math.min(1, t));
+    const lower = v < 0.5;
+    const from = lower ? HEAT_STOPS[0] : HEAT_STOPS[1];
+    const to = lower ? HEAT_STOPS[1] : HEAT_STOPS[2];
+    const k = lower ? v * 2 : (v - 0.5) * 2;
+    const ch = from.map((c, i) => Math.round(c + (to[i] - c) * k));
+    return `rgb(${ch[0]},${ch[1]},${ch[2]})`;
+  }
+  function setOverviewHeatmap(on){
+    overviewHeatmap = on;
+    document.getElementById('overviewHeatCheckbox').checked = on;
+    document.querySelectorAll('#overviewHeatToggle .slide-switch-label').forEach(el => {
+      el.classList.toggle('active', (el.dataset.overviewheat === 'on') === on);
+    });
+    document.getElementById('overviewHeatLegend').style.display = on ? '' : 'none';
+    renderOverview();
+  }
+  document.getElementById('overviewHeatCheckbox').addEventListener('change', (e) => {
+    setOverviewHeatmap(e.target.checked);
+  });
+  document.querySelectorAll('#overviewHeatToggle .slide-switch-label').forEach(label => {
+    label.addEventListener('click', () => setOverviewHeatmap(label.dataset.overviewheat === 'on'));
+  });
+
   function buildUsageTable(counts, activeSquads, activeGroups){
     if(activeGroups.length === 0){
       const p = document.createElement('p');
@@ -6527,11 +6577,20 @@
       tdClass.innerHTML = `<div class="class-cell"><span class="swatch" style="background:${s.color}"></span>${s.name}</div>`;
       tr.appendChild(tdClass);
       let total = 0;
+      // A row of all zeros has no spread to show, so it stays unshaded rather
+      // than going flat red.
+      const rowMax = overviewHeatmap
+        ? Math.max(0, ...activeGroups.map(g => counts[s.id][g.key]))
+        : 0;
       activeGroups.forEach(g => {
         const n = counts[s.id][g.key];
         total += n;
         const td = document.createElement('td');
         td.textContent = formatUsageValue(n);
+        if(rowMax > 0){
+          td.className = 'heat';
+          td.style.background = heatColor(n / rowMax);
+        }
         tr.appendChild(td);
       });
       const tdTotal = document.createElement('td');
