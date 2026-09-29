@@ -6587,7 +6587,7 @@
         total += n;
         const td = document.createElement('td');
         td.textContent = formatUsageValue(n);
-        if(rowMax > 0){
+        if(rowMax > 0 && n > 0){
           td.className = 'heat';
           td.style.background = heatColor(n / rowMax);
         }
