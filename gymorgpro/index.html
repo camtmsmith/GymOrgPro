@@ -813,12 +813,13 @@
 
     <div id="rotaViewBySquad" style="display:none;">
       <div class="panel">
-        <p class="panel-title">Select a Squad</p>
+        <p class="panel-title">Select Squad(s)</p>
+        <p class="hint" style="margin:-4px 0 10px;">Click to toggle a squad on or off — pick as many as you want to compare side by side.</p>
         <div class="squad-pick-row" id="squadPickerRota"></div>
       </div>
       <div class="panel">
         <p class="panel-title">Two-Week Rotation — <span id="selectedSquadLabelRota"></span></p>
-        <p class="panel-desc">Every day this squad trains across the fortnight, Week 1 then Week 2. Picks still check capacity and conflicts against every other squad's allocations, even though those squads aren't shown here.</p>
+        <p class="panel-desc">Every day the selected squad(s) train across the fortnight, Week 1 then Week 2. Picks still check capacity and conflicts against every other squad's allocations, even squads not selected here.</p>
         <div id="rotaBySquadBoard"></div>
       </div>
     </div>
@@ -4723,8 +4724,8 @@
   }
 
   // ---- rotations: "by squad" two-week view ----
-  let rotaViewMode = 'day'; // 'day' = pick a day, see all squads; 'squad' = pick a squad, see its full 14-day cycle
-  let selectedSquadRota = null;
+  let rotaViewMode = 'day'; // 'day' = pick a day, see all squads; 'squad' = pick squad(s), see their full 14-day cycle
+  let selectedSquadsRota = new Set(); // squad ids shown in the "by squad" view — multi-select
 
   function applyRotaView(){
     document.getElementById('rotaViewByDay').style.display = rotaViewMode === 'day' ? '' : 'none';
@@ -4744,35 +4745,51 @@
     const el = document.getElementById('squadPickerRota');
     el.innerHTML = '';
     if(state.squads.length === 0){ el.innerHTML = '<p class="empty-note">Add a squad in Setup first.</p>'; return; }
-    if(!selectedSquadRota || !state.squads.some(s => s.id === selectedSquadRota)) selectedSquadRota = state.squads[0].id;
+    // Drop any selected ids that no longer exist, default to the first squad
+    // when nothing (or nothing valid) is selected — always at least one shown.
+    selectedSquadsRota = new Set([...selectedSquadsRota].filter(id => state.squads.some(s => s.id === id)));
+    if(selectedSquadsRota.size === 0) selectedSquadsRota.add(state.squads[0].id);
     state.squads.forEach(s => {
       const card = document.createElement('div');
-      card.className = 'squad-pick-card' + (selectedSquadRota === s.id ? ' selected' : '');
+      card.className = 'squad-pick-card' + (selectedSquadsRota.has(s.id) ? ' selected' : '');
       card.innerHTML = `<span class="swatch" style="background:${s.color}"></span>${s.name}`;
-      card.addEventListener('click', () => { selectedSquadRota = s.id; renderRotaBySquad(); });
+      card.addEventListener('click', () => {
+        if(selectedSquadsRota.has(s.id)){
+          if(selectedSquadsRota.size === 1) return; // keep at least one squad shown
+          selectedSquadsRota.delete(s.id);
+        } else {
+          selectedSquadsRota.add(s.id);
+        }
+        renderRotaBySquad();
+      });
       el.appendChild(card);
     });
   }
 
-  // Builds the two-week cycle for one squad by reusing buildRotaTable with every
-  // other squad hidden — so the same capacity/conflict logic that governs the
-  // day view applies here too, just against squads that aren't drawn on screen.
-  // One table per week for the squad view: rows are the squad's own time slots
-  // (shared down the left, not repeated per day), columns are the days it trains
-  // that week, lined up so the same row is always the same clock time.
-  function buildSquadWeekTable(weekStart, squad, interactive){
-    const dayIndexes = [];
+  // Builds the two-week cycle across one or more squads as ONE table per week.
+  // Columns are every (day, squad) pair where that squad trains that week — so
+  // with several squads selected, e.g. Tuesday-Blue sits right next to
+  // Thursday-Green, letting you compare their rotations directly instead of
+  // scrolling between separate per-squad tables. Rows are clock-time ticks
+  // (shared down the left), so the same row is always the same time of day,
+  // whichever columns you're comparing. With exactly one squad this reduces to
+  // the original single-squad view (no squad name needed in the header, since
+  // the panel title already says which squad it is).
+  function buildSquadWeekTable(weekStart, squads, interactive){
+    const columns = [];
     for(let dayIndex = weekStart; dayIndex < weekStart + 7; dayIndex++){
       const weekday = weekdayOf(dayIndex);
-      if(((state.schedule[squad.id] || {})[weekday] || []).length) dayIndexes.push(dayIndex);
+      squads.forEach(squad => {
+        if(((state.schedule[squad.id] || {})[weekday] || []).length) columns.push({dayIndex, squad});
+      });
     }
-    if(dayIndexes.length === 0) return null;
+    if(columns.length === 0) return null;
 
-    // Tick range is derived purely from this squad's own sessions across these
-    // days — ticks are clock-time-based (minutes / rotationLength), so the same
-    // tick always means the same time of day and rows line up correctly.
+    // Tick range is derived purely from these columns' own sessions — ticks are
+    // clock-time-based (minutes / rotationLength), so the same tick always means
+    // the same time of day and rows line up correctly across every column.
     let min = null, max = null;
-    dayIndexes.forEach(dayIndex => {
+    columns.forEach(({dayIndex, squad}) => {
       const weekday = weekdayOf(dayIndex);
       (state.schedule[squad.id][weekday] || []).forEach(session => {
         const {startTick, endTick} = sessionTicks(session);
@@ -4782,12 +4799,13 @@
     });
     if(min === null) return null;
 
+    const multi = squads.length > 1;
     const table = document.createElement('table');
     table.className = interactive ? 'rota' : 'print-table';
     const thead = document.createElement('thead');
     const trh = document.createElement('tr');
     trh.appendChild(document.createElement('th'));
-    dayIndexes.forEach(dayIndex => {
+    columns.forEach(({dayIndex, squad}) => {
       const weekday = weekdayOf(dayIndex);
       const th = document.createElement('th');
       const sessions = (state.schedule[squad.id][weekday] || []);
@@ -4799,7 +4817,8 @@
         if(name && sessions.length>1) name = `${ses.label}: ${name}`;
         return name;
       }).filter(Boolean))];
-      th.innerHTML = `${DAY_NAMES_FULL[weekday]}` +
+      th.innerHTML = (multi ? `<span class="swatch" style="background:${squad.color};display:inline-block;margin-right:5px;"></span>` : '') +
+        `${DAY_NAMES_FULL[weekday]}${multi ? ' — ' + squad.name : ''}` +
         (coachNames.length ? `<span class="coach-sub">${coachNames.join(' · ')}</span>` : `<span class="coach-sub">No coach assigned</span>`);
       trh.appendChild(th);
     });
@@ -4808,7 +4827,7 @@
 
     const tbody = document.createElement('tbody');
     for(let tick = min; tick < max; tick++){
-      if(!dayIndexes.some(dayIndex => squadInSessionAtTick(squad.id, dayIndex, tick))) continue;
+      if(!columns.some(({dayIndex, squad}) => squadInSessionAtTick(squad.id, dayIndex, tick))) continue;
 
       const tr = document.createElement('tr');
       const labelTd = document.createElement('td');
@@ -4816,7 +4835,7 @@
       labelTd.textContent = fmt12(tick*state.rotationLength) + '–' + fmt12((tick+1)*state.rotationLength);
       tr.appendChild(labelTd);
 
-      dayIndexes.forEach(dayIndex => {
+      columns.forEach(({dayIndex, squad}) => {
         tr.appendChild(buildStationCell(dayIndex, tick, squad, interactive, renderRotaBySquad));
       });
       tbody.appendChild(tr);
@@ -4832,8 +4851,10 @@
     boardEl.innerHTML = '';
 
     if(state.squads.length === 0) { labelEl.textContent = ''; return; }
-    const squad = state.squads.find(s => s.id === selectedSquadRota) || state.squads[0];
-    labelEl.textContent = squad.name;
+    // Keep the squads in state.squads' own order regardless of click order, so
+    // the board's stacking order always matches the picker above it.
+    const squads = state.squads.filter(s => selectedSquadsRota.has(s.id));
+    labelEl.textContent = squads.length === 1 ? squads[0].name : `${squads.length} squads`;
 
     if(state.stations.length === 0){
       boardEl.innerHTML = '<p class="empty-note">Add at least one station in Setup first.</p>';
@@ -4842,7 +4863,7 @@
 
     let anyWeek = false;
     [0, 7].forEach(weekStart => {
-      const table = buildSquadWeekTable(weekStart, squad, true);
+      const table = buildSquadWeekTable(weekStart, squads, true);
       if(!table) return;
       anyWeek = true;
 
@@ -4861,7 +4882,9 @@
     });
 
     if(!anyWeek){
-      boardEl.innerHTML = '<p class="empty-note">This squad has no session times set yet — add them in Training Schedule.</p>';
+      boardEl.innerHTML = squads.length === 1
+        ? '<p class="empty-note">This squad has no session times set yet — add them in Training Schedule.</p>'
+        : '<p class="empty-note">None of the selected squads have session times set yet — add them in Training Schedule.</p>';
     }
   }
   const printMenuBtn = document.getElementById('printMenuBtn');
@@ -4920,7 +4943,7 @@
       let anySquad = false;
       state.squads.forEach(squad => {
         const weeks = [0, 7]
-          .map((weekStart, i) => ({ weekNum: i + 1, table: buildSquadWeekTable(weekStart, squad, false) }))
+          .map((weekStart, i) => ({ weekNum: i + 1, table: buildSquadWeekTable(weekStart, [squad], false) }))
           .filter(w => w.table);
         if(weeks.length === 0) return;
         anySquad = true;
@@ -5117,10 +5140,11 @@
     if(state.stations.length === 0){ showFlash('Add at least one station on the Location tab first.'); return; }
     const squads = csSquadRoster();
     if(squads.length === 0){ showFlash('Add a squad on the Organisation tab first.'); return; }
-    // Default: whichever squad is open in the "by squad" rotation view, else all.
-    csSelectedSquads = (rotaViewMode === 'squad' && selectedSquadRota && squads.some(s => s.id === selectedSquadRota))
-      ? new Set([selectedSquadRota])
-      : new Set(squads.map(s => s.id));
+    // Default: whichever squad(s) are open in the "by squad" rotation view, else all.
+    const fromRotaView = rotaViewMode === 'squad'
+      ? new Set([...selectedSquadsRota].filter(id => squads.some(s => s.id === id)))
+      : new Set();
+    csSelectedSquads = fromRotaView.size ? fromRotaView : new Set(squads.map(s => s.id));
     document.getElementById('csWeekSelect').value = String(weekOf(state.selectedDay) || 0);
     renderCsDateOptions();
     renderCsSquadList();
