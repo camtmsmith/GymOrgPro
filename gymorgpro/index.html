@@ -103,8 +103,13 @@
   .cal-month-day-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;text-align:center;padding-bottom:2px;}
   .cal-day-col{border:1px solid var(--line);border-radius:8px;padding:8px;min-height:64px;background:var(--panel);}
   .cal-day-col.out-of-range{opacity:.4;background:var(--idle);}
+  .cal-day-col.cal-day-closed{background:repeating-linear-gradient(135deg,var(--idle),var(--idle) 8px,var(--panel) 8px,var(--panel) 16px);border-color:#E8C7C7;}
   .cal-day-head{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;color:var(--slate);margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;}
   .cal-day-head .daynum{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;color:var(--ink);}
+  .cal-day-closed-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#B5292E;}
+  .closed-day-note{color:#B5292E;}
+  .lp-skill-chip.closed-date-chip{cursor:default;border-color:#E8C7C7;background:#FBF0F0;color:#8A2E2E;}
+  .lp-skill-chip.closed-date-chip .closed-chip-remove{cursor:pointer;font-weight:700;color:#B5292E;}
   .cal-session-chip{display:block;width:100%;text-align:left;font-family:'JetBrains Mono',monospace;font-size:10px;border:none;border-radius:5px;padding:4px 6px;margin-bottom:4px;cursor:pointer;color:#fff;line-height:1.4;}
   .cal-session-chip .chip-status{float:right;margin-left:4px;}
 
@@ -853,6 +858,23 @@
     <p class="view-only-note">👁 Anyone signed in, including Coaches, can open a session below and save its lesson plan. Creating, editing and deleting schedule blocks needs a Scheduler or Admin, on the Schedule tab.</p>
     <p class="panel-desc" style="max-width:1280px;margin:14px auto 0;padding:0 2px;">Showing the schedule block selected in the header picker (<strong>Organisation → Location → Schedule Block</strong>). Each block anchors the two-week rotation cycle to real dates, so sessions show their actual station rotation and can have a lesson plan attached. Switch blocks from the header dropdown; create, copy, edit and delete them on the <strong>Schedule</strong> tab.</p>
     <p class="empty-note" id="calendarBlockEmptyNote" style="display:none;">No schedule blocks yet for this location — create one on the Schedule tab.</p>
+
+    <div class="panel" id="closedDatesPanel" style="display:none;">
+      <p class="panel-title">Closed Dates</p>
+      <p class="panel-desc">Mark a public holiday or gym closure — every squad's session on that date is skipped entirely (no rotation, no lesson plan, no Chalk hand-off). The two-week rotation cycle keeps counting normally underneath; only that date's sessions are ignored.</p>
+      <div class="lp-form-grid" style="align-items:flex-end;">
+        <label class="lp-field">
+          <span>Date</span>
+          <input type="date" id="closedDateInput">
+        </label>
+        <label class="lp-field">
+          <span>Reason (optional)</span>
+          <input type="text" id="closedDateReasonInput" placeholder="e.g. Public holiday">
+        </label>
+        <button type="button" class="roster-row-btn scheduler-gated-btn" id="closedDateAddBtn" style="height:37px;">Mark Closed</button>
+      </div>
+      <div class="lp-skill-chips" id="closedDatesList"></div>
+    </div>
 
     <div class="panel" id="calendarBlockContent" style="display:none;">
       <p class="panel-title">Sessions</p>
@@ -2365,7 +2387,7 @@
         closeSchedBlockForm();
         commit();
       } else {
-        const blk = { id: uid('calb'), name, startDate, endDate, squadIds, hidden: false, schedule: {}, allocations: {}, rotationLength: state.rotationLength || 15, selectedDay: 0 };
+        const blk = { id: uid('calb'), name, startDate, endDate, squadIds, hidden: false, schedule: {}, allocations: {}, rotationLength: state.rotationLength || 15, selectedDay: 0, closedDates: [] };
         state.calendarBlocks.push(blk);
         closeSchedBlockForm();
         switchScheduleBlock(blk.id);
@@ -5031,7 +5053,7 @@
     const out = [];
     if(!block || !block.startDate || !block.endDate) return out;
     const end = new Date(block.endDate + 'T00:00:00');
-    const d = new Date(block.startDate + 'T00:00:00');
+    const d = blockCycleAnchor(block);
     d.setDate(d.getDate() + 7 * cycleWeek);
     while(d <= end){
       out.push(new Date(d));
@@ -5603,6 +5625,42 @@
     const diffDays = Math.round((stripTime(d) - stripTime(anchorMonday)) / 86400000);
     return ((diffDays % 14) + 14) % 14;
   }
+  // dayIndex 0-13 is defined as Mon..Sun, Mon..Sun (dayIndex % 7 === the
+  // schedule editor's own weekday), so the real-date anchor for it has to be an
+  // actual Monday. A block's startDate isn't always one (e.g. pushed a day by a
+  // public holiday), so this snaps back to that week's Monday rather than using
+  // startDate itself — otherwise every real date resolves to the wrong slot in
+  // the 14-day grid, off by a constant number of days.
+  function blockCycleAnchor(block){
+    const d = new Date(block.startDate + 'T00:00:00');
+    d.setDate(d.getDate() - appWeekdayOfDate(d));
+    return d;
+  }
+
+  // ---- closed dates (public holidays / gym closures) ------------------------
+  // Stored per block (same as schedule/allocations) as {date, reason}. Marking a
+  // date closed doesn't touch the rotation grid or shift the fortnight cycle —
+  // it just tells every calendar/export/Chalk read to skip that real date, for
+  // every squad, as if nothing was scheduled.
+  function closedDateInfo(block, dateStr){
+    if(!block) return null;
+    return (block.closedDates || []).find(c => c.date === dateStr) || null;
+  }
+  function isDateClosed(block, dateStr){
+    return !!closedDateInfo(block, dateStr);
+  }
+  function addClosedDate(block, dateStr, reason){
+    if(!block || !dateStr) return;
+    if(!Array.isArray(block.closedDates)) block.closedDates = [];
+    const existing = block.closedDates.find(c => c.date === dateStr);
+    if(existing) existing.reason = reason || '';
+    else block.closedDates.push({date: dateStr, reason: reason || ''});
+    block.closedDates.sort((a, b) => a.date.localeCompare(b.date));
+  }
+  function removeClosedDate(block, dateStr){
+    if(!block || !Array.isArray(block.closedDates)) return;
+    block.closedDates = block.closedDates.filter(c => c.date !== dateStr);
+  }
   function computeTermWeekNumber(d, fromDate){
     const diffDays = Math.round((stripTime(d) - stripTime(fromDate)) / 86400000);
     return Math.floor(diffDays / 7) + 1;
@@ -5650,7 +5708,7 @@
     document.getElementById('lpTermLabel').value = block.name;
     document.getElementById('lpFromDate').value = block.startDate;
     document.getElementById('lpToDate').value = block.endDate;
-    document.getElementById('lpAnchorMonday').value = block.startDate;
+    document.getElementById('lpAnchorMonday').value = isoDateStr(blockCycleAnchor(block));
     // The squad list itself is now scoped to this block's roster (see
     // renderLessonPlansFilter/lpCurrentBlock), so everything in it starts checked.
     lpHiddenSquads = new Set();
@@ -5702,6 +5760,7 @@
     const gymTitle = 'Gym Org Pro' + (state.gymName ? ' - ' + state.gymName : '');
 
     for(let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)){
+      if(lpBlock && isDateClosed(lpBlock, isoDateStr(d))) continue;
       const weekday = appWeekdayOfDate(d);
       for(const squad of includedSquads){
         const sessions = ((state.schedule[squad.id] || {})[weekday]) || [];
@@ -5791,6 +5850,7 @@
     renderCalendarBlockSwitch();
     renderCalendarSquadFilter();
     renderCalendarSessionList();
+    renderClosedDatesPanel();
   }
 
   function renderCalendarBlockSwitch(){
@@ -5813,6 +5873,51 @@
     const content = document.getElementById('calendarBlockContent');
     if(content) content.style.display = hasBlocks ? '' : 'none';
   }
+
+  // ---- closed dates (public holidays / gym closures) ----
+  function renderClosedDatesPanel(){
+    const panel = document.getElementById('closedDatesPanel');
+    const block = getSelectedCalendarBlock();
+    if(panel) panel.style.display = block ? '' : 'none';
+    if(!block) return;
+    const listEl = document.getElementById('closedDatesList');
+    listEl.innerHTML = '';
+    const dates = (block.closedDates || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+    if(dates.length === 0){
+      const p = document.createElement('p');
+      p.className = 'hint';
+      p.textContent = 'No closed dates for this block yet.';
+      listEl.appendChild(p);
+      return;
+    }
+    dates.forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'lp-skill-chip closed-date-chip';
+      const label = document.createElement('span');
+      label.textContent = `${formatDateForHeader(new Date(c.date + 'T00:00:00'))}${c.reason ? ' — ' + c.reason : ''}`;
+      chip.appendChild(label);
+      const rm = document.createElement('span');
+      rm.className = 'closed-chip-remove scheduler-gated-btn';
+      rm.textContent = '×';
+      rm.title = 'Remove this closure';
+      rm.addEventListener('click', () => { removeClosedDate(block, c.date); commit(); });
+      chip.appendChild(rm);
+      listEl.appendChild(chip);
+    });
+  }
+  document.getElementById('closedDateAddBtn').addEventListener('click', () => {
+    const block = getSelectedCalendarBlock();
+    if(!block) return;
+    const dateInput = document.getElementById('closedDateInput');
+    const dateStr = dateInput.value;
+    if(!dateStr){ showFlash('Pick a date first.'); return; }
+    if(dateStr < block.startDate || dateStr > block.endDate){ showFlash('That date is outside this block’s range.'); return; }
+    const reason = document.getElementById('closedDateReasonInput').value.trim();
+    addClosedDate(block, dateStr, reason);
+    dateInput.value = '';
+    document.getElementById('closedDateReasonInput').value = '';
+    commit();
+  });
 
   // ---- session list ----
   let calendarViewMode = 'list'; // 'list' | 'week' | 'month'
@@ -5892,11 +5997,12 @@
   }
 
   function renderCalendarListView(el, block, squads){
-    const anchorMonday = new Date(block.startDate + 'T00:00:00');
+    const listStart = new Date(block.startDate + 'T00:00:00');
+    const cycleAnchor = blockCycleAnchor(block);
     const endDate = new Date(block.endDate + 'T00:00:00');
     let any = false;
 
-    for(let d = new Date(anchorMonday); d <= endDate; d.setDate(d.getDate() + 1)){
+    for(let d = new Date(listStart); d <= endDate; d.setDate(d.getDate() + 1)){
       const weekday = appWeekdayOfDate(d);
       const rows = sessionsForDate(d, squads);
       if(rows.length === 0) continue;
@@ -5907,6 +6013,15 @@
       title.textContent = `${DAY_NAMES_FULL[weekday]} — ${formatDateForHeader(d)}`;
       el.appendChild(title);
 
+      const closed = closedDateInfo(block, isoDateStr(d));
+      if(closed){
+        const note = document.createElement('p');
+        note.className = 'empty-note closed-day-note';
+        note.textContent = `Closed${closed.reason ? ' — ' + closed.reason : ''} — ${rows.length} session${rows.length === 1 ? '' : 's'} skipped.`;
+        el.appendChild(note);
+        continue;
+      }
+
       const table = document.createElement('table');
       table.className = 'roster';
       const thead = document.createElement('tr');
@@ -5914,7 +6029,7 @@
       table.appendChild(thead);
 
       const dateStr = isoDateStr(d);
-      const dayIndex = computeCycleDayIndex(d, anchorMonday);
+      const dayIndex = computeCycleDayIndex(d, cycleAnchor);
 
       rows.forEach(({s, session}) => {
         const startMin = toMinutes(session.startTime), endMin = startMin + session.duration;
@@ -5966,7 +6081,7 @@
     const weekStartD = new Date(anchorD);
     weekStartD.setDate(weekStartD.getDate() - appWeekdayOfDate(anchorD));
     const weekEndD = new Date(weekStartD); weekEndD.setDate(weekEndD.getDate() + 6);
-    const blockAnchorMonday = new Date(block.startDate + 'T00:00:00');
+    const blockAnchorMonday = blockCycleAnchor(block);
 
     const nav = document.createElement('div');
     nav.className = 'cal-nav';
@@ -5999,13 +6114,19 @@
       const d = new Date(weekStartD.getFullYear(), weekStartD.getMonth(), weekStartD.getDate() + i);
       const dateStr = isoDateStr(d);
       const inRange = dateStr >= block.startDate && dateStr <= block.endDate;
+      const closed = inRange ? closedDateInfo(block, dateStr) : null;
       const col = document.createElement('div');
-      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range');
+      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range') + (closed ? ' cal-day-closed' : '');
       const head = document.createElement('div');
       head.className = 'cal-day-head';
       head.innerHTML = `<span>${DAY_NAMES[appWeekdayOfDate(d)]}</span><span class="daynum">${d.getDate()}</span>`;
       col.appendChild(head);
-      if(inRange){
+      if(closed){
+        const note = document.createElement('div');
+        note.className = 'cal-day-closed-label';
+        note.textContent = closed.reason || 'Closed';
+        col.appendChild(note);
+      } else if(inRange){
         const dayIndex = computeCycleDayIndex(d, blockAnchorMonday);
         sessionsForDate(d, squads).forEach(({s, session}) => {
           any = true;
@@ -6030,7 +6151,7 @@
     const monthEnd = new Date(anchorD.getFullYear(), anchorD.getMonth() + 1, 0);
     const gridStart = new Date(monthStart); gridStart.setDate(gridStart.getDate() - appWeekdayOfDate(monthStart));
     const gridEnd = new Date(monthEnd); gridEnd.setDate(gridEnd.getDate() + (6 - appWeekdayOfDate(monthEnd)));
-    const blockAnchorMonday = new Date(block.startDate + 'T00:00:00');
+    const blockAnchorMonday = blockCycleAnchor(block);
     const blockStartMonth = new Date(block.startDate + 'T00:00:00'); blockStartMonth.setDate(1);
     const blockEndMonth = new Date(block.endDate + 'T00:00:00'); blockEndMonth.setDate(1);
 
@@ -6074,13 +6195,19 @@
       const dateStr = isoDateStr(d);
       const inMonth = d.getMonth() === monthStart.getMonth();
       const inRange = inMonth && dateStr >= block.startDate && dateStr <= block.endDate;
+      const closed = inRange ? closedDateInfo(block, dateStr) : null;
       const col = document.createElement('div');
-      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range');
+      col.className = 'cal-day-col' + (inRange ? '' : ' out-of-range') + (closed ? ' cal-day-closed' : '');
       const head = document.createElement('div');
       head.className = 'cal-day-head';
       head.innerHTML = `<span class="daynum">${d.getDate()}</span>`;
       col.appendChild(head);
-      if(inRange){
+      if(closed){
+        const note = document.createElement('div');
+        note.className = 'cal-day-closed-label';
+        note.textContent = closed.reason || 'Closed';
+        col.appendChild(note);
+      } else if(inRange){
         const dayIndex = computeCycleDayIndex(d, blockAnchorMonday);
         sessionsForDate(d, squads).forEach(({s, session}) => {
           any = true;

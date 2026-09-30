@@ -65,6 +65,30 @@
     return Math.round((a.getTime() - b.getTime()) / MS_PER_DAY);
   }
 
+  // dayIndex 0-13 is Mon..Sun, Mon..Sun — GymOrgPro's own rotation grid assumes
+  // dayIndex % 7 IS the weekday, which only holds if the anchor date fed into
+  // the dayIndex math is an actual Monday. A block's startDate isn't always one
+  // (e.g. pushed a day by a public holiday), so this snaps back to that week's
+  // Monday. Without it, every date's dayIndex is off by a constant number of
+  // days, even though `weekday` (computed straight from the real date) stays
+  // right — which is why a session's coach/time/duration look correct while its
+  // rotation silently comes from the wrong day.
+  function mondayAnchor(date) {
+    var d = new Date(date.getTime());
+    d.setUTCDate(d.getUTCDate() - realWeekday(d));
+    return d;
+  }
+
+  // GymOrgPro's Calendar tab lets a date be marked closed (public holiday / gym
+  // closure) — stored on the block as closedDates: [{date, reason}]. Chalk
+  // mirrors that by dropping the date from datedSessions() entirely, so it
+  // never shows up to plan and day-to-day navigation skips straight over it.
+  function isDateClosed(block, dateStr) {
+    return (block.closedDates || []).some(function (c) {
+      return (typeof c === "string" ? c : c.date) === dateStr;
+    });
+  }
+
   function fmtTime(hhmm) {
     var m = toMinutes(hhmm);
     var h24 = Math.floor(m / 60), mm = m % 60;
@@ -275,6 +299,7 @@
     var start = parseISO(block.startDate);
     var end = parseISO(block.endDate);
     if (!start || !end) return [];
+    var cycleAnchor = mondayAnchor(start);
 
     var squadIds = Array.isArray(block.squadIds) && block.squadIds.length
       ? block.squadIds
@@ -283,9 +308,10 @@
     var out = [];
 
     for (var d = new Date(start.getTime()); d.getTime() <= end.getTime(); d = new Date(d.getTime() + MS_PER_DAY)) {
-      var weekday = realWeekday(d);
-      var dayIndex = ((daysBetween(d, start) % 14) + 14) % 14;
       var dateStr = isoOf(d);
+      if (isDateClosed(block, dateStr)) continue; // public holiday / gym closure — no session exists on this date at all
+      var weekday = realWeekday(d);
+      var dayIndex = ((daysBetween(d, cycleAnchor) % 14) + 14) % 14;
       for (var s = 0; s < squadIds.length; s++) {
         var sqId = squadIds[s];
         var daySessions = (block.schedule || {})[sqId] || {};
@@ -550,5 +576,6 @@
     lessonPlanFor: lessonPlanFor,
     circuitsForLegs: circuitsForLegs,
     realWeekday: realWeekday,
+    isDateClosed: isDateClosed,
   };
 })(typeof window !== "undefined" ? window : this);
