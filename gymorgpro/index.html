@@ -844,9 +844,17 @@
           </span>
           <span class="slide-switch-label" data-overviewheat="on">Heat Map</span>
         </div>
+        <div class="slide-switch" id="overviewHeatAxisToggle" style="display:none;">
+          <span class="slide-switch-label active" data-overviewheataxis="row">Across Rows</span>
+          <span class="slide-switch-track">
+            <input type="checkbox" id="overviewHeatAxisCheckbox">
+            <span class="slide-switch-pill"></span>
+          </span>
+          <span class="slide-switch-label" data-overviewheataxis="col">Down Columns</span>
+        </div>
         <div class="heat-legend" id="overviewHeatLegend" style="display:none;">
           <span>Least</span><span class="heat-legend-bar"></span><span>Most</span>
-          <span style="text-transform:none;letter-spacing:0;">— shaded per squad, against that squad's busiest station</span>
+          <span id="overviewHeatLegendNote" style="text-transform:none;letter-spacing:0;">— shaded per squad, against that squad's busiest station</span>
         </div>
       </div>
       <div class="squad-filter" id="overviewSquadFilter"></div>
@@ -6674,7 +6682,10 @@
   // station, so an uneven spread within a squad reads at a glance no matter how
   // much total time that squad trains. Scaling per row rather than per table
   // keeps a low-hours squad from being uniformly red next to a heavy one.
+  // Column mode instead shades each station against its busiest squad, so
+  // similar squads can be checked for equal time on the same apparatus.
   let overviewHeatmap = false;
+  let overviewHeatAxis = 'row'; // 'row' | 'col'
   const HEAT_STOPS = [[248,105,107],[255,235,132],[99,190,123]]; // least -> mid -> most
   function heatColor(t){
     const v = Math.max(0, Math.min(1, t));
@@ -6692,8 +6703,26 @@
       el.classList.toggle('active', (el.dataset.overviewheat === 'on') === on);
     });
     document.getElementById('overviewHeatLegend').style.display = on ? '' : 'none';
+    document.getElementById('overviewHeatAxisToggle').style.display = on ? '' : 'none';
     renderOverview();
   }
+  function setOverviewHeatAxis(axis){
+    overviewHeatAxis = axis;
+    document.getElementById('overviewHeatAxisCheckbox').checked = axis === 'col';
+    document.querySelectorAll('#overviewHeatAxisToggle .slide-switch-label').forEach(el => {
+      el.classList.toggle('active', el.dataset.overviewheataxis === axis);
+    });
+    document.getElementById('overviewHeatLegendNote').textContent = axis === 'col'
+      ? "— shaded per station, against that station's busiest squad"
+      : "— shaded per squad, against that squad's busiest station";
+    renderOverview();
+  }
+  document.getElementById('overviewHeatAxisCheckbox').addEventListener('change', (e) => {
+    setOverviewHeatAxis(e.target.checked ? 'col' : 'row');
+  });
+  document.querySelectorAll('#overviewHeatAxisToggle .slide-switch-label').forEach(label => {
+    label.addEventListener('click', () => setOverviewHeatAxis(label.dataset.overviewheataxis));
+  });
   document.getElementById('overviewHeatCheckbox').addEventListener('change', (e) => {
     setOverviewHeatmap(e.target.checked);
   });
@@ -6721,6 +6750,14 @@
     thead.appendChild(trh);
     table.appendChild(thead);
 
+    // Busiest squad per station, for column-scaled shading.
+    const colMax = {};
+    if(overviewHeatmap && overviewHeatAxis === 'col'){
+      activeGroups.forEach(g => {
+        colMax[g.key] = Math.max(0, ...activeSquads.map(s => counts[s.id][g.key]));
+      });
+    }
+
     const tbody = document.createElement('tbody');
     activeSquads.forEach(s => {
       const tr = document.createElement('tr');
@@ -6730,7 +6767,7 @@
       let total = 0;
       // A row of all zeros has no spread to show, so it stays unshaded rather
       // than going flat red.
-      const rowMax = overviewHeatmap
+      const rowMax = overviewHeatmap && overviewHeatAxis === 'row'
         ? Math.max(0, ...activeGroups.map(g => counts[s.id][g.key]))
         : 0;
       activeGroups.forEach(g => {
@@ -6738,9 +6775,10 @@
         total += n;
         const td = document.createElement('td');
         td.textContent = formatUsageValue(n);
-        if(rowMax > 0 && n > 0){
+        const max = overviewHeatAxis === 'col' ? (colMax[g.key] || 0) : rowMax;
+        if(overviewHeatmap && max > 0 && n > 0){
           td.className = 'heat';
-          td.style.background = heatColor(n / rowMax);
+          td.style.background = heatColor(n / max);
         }
         tr.appendChild(td);
       });
