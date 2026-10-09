@@ -433,6 +433,8 @@
   .rota-lock-btn{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
   .rota-lock-btn:hover{border-color:var(--ink);}
   .rota-lock-btn:disabled{opacity:.4;cursor:default;border-color:var(--line);}
+  .rota-history{display:flex;flex-direction:column;gap:4px;align-items:stretch;}
+  .rota-history .rota-lock-btn{padding:4px 10px;font-size:11px;}
   .rota-lock-bar.locked .rota-lock-btn{background:var(--mat-red);color:#fff;border-color:var(--mat-red);}
   .rota-lock-bar.locked .rota-lock-btn:hover{opacity:.9;}
 
@@ -793,7 +795,6 @@
       </div>
       <div class="rota-lock-bar" id="rotaLockBar">
         <span class="rota-lock-status" id="rotaLockStatus"></span>
-        <button type="button" class="rota-lock-btn" id="rotaUndoBtn" title="Undo the last rotation change" disabled>Undo</button>
         <button type="button" class="rota-lock-btn admin-gated-control" id="rotaLockToggleBtn" title="Admin only — locks this schedule block's rotations against takeovers">Lock Rotations</button>
       </div>
     </div>
@@ -4433,25 +4434,50 @@
     }
   }
 
-  // Undo for rotation picks: a snapshot of the allocations taken before each
-  // change, tagged with its schedule block so an undo never lands on another block.
+  // Undo/redo for rotation picks: snapshots of the allocations, tagged with their
+  // schedule block so an undo never lands on another block. A fresh pick clears
+  // the redo stack, as in any editor.
   const rotaUndoStack = [];
+  const rotaRedoStack = [];
+  function rotaSnapshot(){
+    return { blockId: state.activeScheduleBlockId, allocations: JSON.parse(JSON.stringify(state.allocations || {})) };
+  }
   function pushRotaUndo(){
-    rotaUndoStack.push({ blockId: state.activeScheduleBlockId, allocations: JSON.parse(JSON.stringify(state.allocations || {})) });
+    rotaUndoStack.push(rotaSnapshot());
     if(rotaUndoStack.length > 50) rotaUndoStack.shift();
+    rotaRedoStack.length = 0;
   }
-  function updateRotaUndoBtn(){
-    while(rotaUndoStack.length && rotaUndoStack[rotaUndoStack.length - 1].blockId !== state.activeScheduleBlockId) rotaUndoStack.pop();
-    document.getElementById('rotaUndoBtn').disabled = rotaUndoStack.length === 0;
+  function pruneRotaHistory(){
+    [rotaUndoStack, rotaRedoStack].forEach(stack => {
+      while(stack.length && stack[stack.length - 1].blockId !== state.activeScheduleBlockId) stack.pop();
+    });
   }
-  document.getElementById('rotaUndoBtn').addEventListener('click', () => {
-    updateRotaUndoBtn();
-    const snap = rotaUndoStack.pop();
+  function stepRotaHistory(from, to, msg){
+    pruneRotaHistory();
+    const snap = from.pop();
     if(!snap) return;
+    to.push(rotaSnapshot());
     state.allocations = snap.allocations;
-    showFlash('Rotation change undone.');
+    showFlash(msg);
     commit();
-  });
+  }
+  function buildRotaHistoryButtons(){
+    pruneRotaHistory();
+    const wrap = document.createElement('div');
+    wrap.className = 'rota-history';
+    [['Undo', rotaUndoStack, rotaRedoStack, 'Rotation change undone.'],
+     ['Redo', rotaRedoStack, rotaUndoStack, 'Rotation change redone.']].forEach(([label, from, to, msg]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rota-lock-btn';
+      btn.textContent = label;
+      btn.title = `${label} the last rotation change`;
+      btn.disabled = from.length === 0;
+      btn.addEventListener('click', () => stepRotaHistory(from, to, msg));
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
 
   // Converts existing allocations from the old tick numbering to the new one
   // instead of discarding them, since a "tick" is just (minutes / rotationLength)
@@ -4671,7 +4697,9 @@
     table.className = interactive ? 'rota' : 'print-table';
     const thead = document.createElement('thead');
     const trh = document.createElement('tr');
-    trh.appendChild(document.createElement('th'));
+    const corner = document.createElement('th');
+    if(interactive) corner.appendChild(buildRotaHistoryButtons());
+    trh.appendChild(corner);
     visibleSquadsToday.forEach(s => {
       const th = document.createElement('th');
       const sessions = ((state.schedule[s.id]||{})[weekdayOf(dayIndex)])||[];
@@ -6878,7 +6906,6 @@
     renderLpHeaderList();
     renderScheduleBlockBar();
     renderRotaLockBar();
-    updateRotaUndoBtn();
     renderScheduleList();
     renderDayPickerRota();
     renderRotaBoard();
