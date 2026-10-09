@@ -432,6 +432,7 @@
   .rota-lock-bar.locked .rota-lock-status{color:var(--mat-red);font-weight:700;}
   .rota-lock-btn{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
   .rota-lock-btn:hover{border-color:var(--ink);}
+  .rota-lock-btn:disabled{opacity:.4;cursor:default;border-color:var(--line);}
   .rota-lock-bar.locked .rota-lock-btn{background:var(--mat-red);color:#fff;border-color:var(--mat-red);}
   .rota-lock-bar.locked .rota-lock-btn:hover{opacity:.9;}
 
@@ -792,6 +793,7 @@
       </div>
       <div class="rota-lock-bar" id="rotaLockBar">
         <span class="rota-lock-status" id="rotaLockStatus"></span>
+        <button type="button" class="rota-lock-btn" id="rotaUndoBtn" title="Undo the last rotation change" disabled>Undo</button>
         <button type="button" class="rota-lock-btn admin-gated-control" id="rotaLockToggleBtn" title="Admin only — locks this schedule block's rotations against takeovers">Lock Rotations</button>
       </div>
     </div>
@@ -4431,6 +4433,26 @@
     }
   }
 
+  // Undo for rotation picks: a snapshot of the allocations taken before each
+  // change, tagged with its schedule block so an undo never lands on another block.
+  const rotaUndoStack = [];
+  function pushRotaUndo(){
+    rotaUndoStack.push({ blockId: state.activeScheduleBlockId, allocations: JSON.parse(JSON.stringify(state.allocations || {})) });
+    if(rotaUndoStack.length > 50) rotaUndoStack.shift();
+  }
+  function updateRotaUndoBtn(){
+    while(rotaUndoStack.length && rotaUndoStack[rotaUndoStack.length - 1].blockId !== state.activeScheduleBlockId) rotaUndoStack.pop();
+    document.getElementById('rotaUndoBtn').disabled = rotaUndoStack.length === 0;
+  }
+  document.getElementById('rotaUndoBtn').addEventListener('click', () => {
+    updateRotaUndoBtn();
+    const snap = rotaUndoStack.pop();
+    if(!snap) return;
+    state.allocations = snap.allocations;
+    showFlash('Rotation change undone.');
+    commit();
+  });
+
   // Converts existing allocations from the old tick numbering to the new one
   // instead of discarding them, since a "tick" is just (minutes / rotationLength)
   // — the underlying clock time each pick belongs to hasn't changed, only which
@@ -4557,6 +4579,7 @@
       const newStationId = select.value;
       const newStation = state.stations.find(x=>x.id===newStationId);
       if(!newStationId){
+        pushRotaUndo();
         setAlloc(dayIndex, tick, squad.id, '');
         commit();
         return;
@@ -4613,6 +4636,7 @@
         openStealModal({
           mode: 'pin', squad, station: newStation, clearNames, reasons, whenLabel,
           onConfirm: () => {
+            pushRotaUndo();
             clearIds.forEach(id => setAlloc(dayIndex, tick, id, ''));
             setAlloc(dayIndex, tick, squad.id, newStationId);
             const me = getCurrentUser();
@@ -4623,6 +4647,7 @@
         });
         return;
       }
+      pushRotaUndo();
       setAlloc(dayIndex, tick, squad.id, newStationId);
       commit();
     });
@@ -6853,6 +6878,7 @@
     renderLpHeaderList();
     renderScheduleBlockBar();
     renderRotaLockBar();
+    updateRotaUndoBtn();
     renderScheduleList();
     renderDayPickerRota();
     renderRotaBoard();

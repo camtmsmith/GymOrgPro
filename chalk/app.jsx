@@ -1376,6 +1376,49 @@ function ChalkApp() {
     flashPlan(`Copied ${n} skill${n === 1 ? "" : "s"} from ${hit.session.dow} ${fmtShortDate(hit.session.date)} — the last time this squad was on ${leg.stationName || "this station"}.`);
   }
 
+  // ---- Copy a whole plan from another squad --------------------------------
+  // e.g. plan Fundamentals Yellow, then pull the same plan into Fundamentals
+  // Blue. Rotations can run in a different order, so each skill lands on the
+  // leg with the same station (falling back to the same apparatus) rather than
+  // the same rotation number. Like "Copy previous", it tops up, never wipes.
+  const otherSquadPlans = useMemo(() => {
+    if (!gCurrent) return [];
+    const planned = (s) => Object.values(plansRef.current[s.key] || {}).some((v) => !v.gop && !v.gopNote);
+    return gAllDated
+      .filter((s) => s.squadId !== gCurrent.squadId && planned(s))
+      .sort((a, b) => ((a.date === gCurrent.date ? 0 : 1) - (b.date === gCurrent.date ? 0 : 1)) || (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  }, [gAllDated, gCurrent, selected]);
+
+  function copyFromOtherSquad(srcKey) {
+    const src = gAllDated.find((s) => s.key === srcKey);
+    if (!src || !gLegs.length) return;
+    const targetFor = (v) => {
+      if (v.slot === "W" || v.slot === "D") return v.slot;
+      const srcLeg = typeof v.slot === "number" ? (src.legs || [])[v.slot] : null;
+      let i = srcLeg ? gLegs.findIndex((l) => l.stationId === srcLeg.stationId) : -1;
+      if (i < 0) {
+        const app = (srcLeg && stationMap[srcLeg.stationId]) || v.section;
+        i = app ? gLegs.findIndex((l) => stationMap[l.stationId] === app) : -1;
+      }
+      return i < 0 ? null : i;
+    };
+    const items = Object.entries(plansRef.current[srcKey] || {})
+      .filter(([, v]) => !v.gop && !v.gopNote)
+      .sort((a, b) => byOrd(a[1], b[1]));
+    const moves = items.map(([id, v]) => [id, v, targetFor(v)]).filter((m) => m[2] !== null);
+    const copied = moves.length, skipped = items.length - moves.length;
+    setSelected((prev) => {
+      const next = { ...prev };
+      moves.forEach(([id, v, slot]) => {
+        const nid = `${slot}|${id.slice(id.indexOf("|") + 1)}`;
+        next[nid] = { ...v, slot, ord: (prev[nid] && typeof prev[nid].ord === "number") ? prev[nid].ord : nextOrd(next, slot) };
+      });
+      return next;
+    });
+    flashPlan(`Copied ${copied} skill${copied === 1 ? "" : "s"} from ${src.squadName} (${src.dow} ${fmtShortDate(src.date)}).` +
+      (skipped ? ` ${skipped} skipped — this squad's rotation has no matching station.` : ""));
+  }
+
   function applyPrefillToRotation() {
     if (!gLegs.length || !gMappedLevel) return;
     const secs = gLegs.map((l) => stationMap[l.stationId]).filter(Boolean);
@@ -1516,7 +1559,7 @@ function ChalkApp() {
   function prevLesson() { if (gSessionIdx > 0) setGSessionIdx(gSessionIdx - 1); }
 
   const planContext = gCurrent ? `${gSquad ? gSquad.name + " · " : ""}${gCurrent.dow} ${fmtShortDate(gCurrent.date)}` : "";
-  const planProps = { gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, selected, setSelected, setLightbox, orderedSections, bySection, bySlot, targetSlot, focusSlot, level, focus, duration, copyPlan, printPlan, clearAll, planContext, selectedList, exportOne, exportMany, gSessions, gAllDated, prevByLeg, copyPreviousIntoLeg, planFlash, setPlanFlash, moveSkill, moveSkillTo, gopNotes, myNote, setMyNote };
+  const planProps = { gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, selected, setSelected, setLightbox, orderedSections, bySection, bySlot, targetSlot, focusSlot, level, focus, duration, copyPlan, printPlan, clearAll, planContext, selectedList, exportOne, exportMany, gSessions, gAllDated, prevByLeg, copyPreviousIntoLeg, planFlash, setPlanFlash, moveSkill, moveSkillTo, gopNotes, myNote, setMyNote, otherSquadPlans, copyFromOtherSquad };
 
   return (
     <div style={{ fontFamily: "Inter, system-ui, sans-serif", color: INK }} className="min-h-screen bg-slate-100">
@@ -1984,7 +2027,7 @@ function SlotBlock({ slotId, stationId, title, color, minutes, skills, subtitle,
 }
 
 // ---------------------------------------------------------- session plan --
-function LessonPlanDoc({ gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, selected, setSelected, setLightbox, orderedSections, bySection, bySlot, targetSlot, focusSlot, level, focus, duration, copyPlan, printPlan, clearAll, planContext, selectedList, exportOne, exportMany, gSessions, gAllDated, prevByLeg, copyPreviousIntoLeg, planFlash, setPlanFlash, moveSkill, moveSkillTo, gopNotes, myNote, setMyNote }) {
+function LessonPlanDoc({ gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, selected, setSelected, setLightbox, orderedSections, bySection, bySlot, targetSlot, focusSlot, level, focus, duration, copyPlan, printPlan, clearAll, planContext, selectedList, exportOne, exportMany, gSessions, gAllDated, prevByLeg, copyPreviousIntoLeg, planFlash, setPlanFlash, moveSkill, moveSkillTo, gopNotes, myNote, setMyNote, otherSquadPlans, copyFromOtherSquad }) {
   const hasSession = !!(gLegs && gLegs.length);
   const remove = (id) => setSelected((prev) => { const n = { ...prev }; delete n[id]; return n; });
   const headerUri = gHeader ? GB.headerDataUri(gHeader) : "";
@@ -2045,6 +2088,14 @@ function LessonPlanDoc({ gymorg, gCurrent, gSquad, gHeader, gLegs, stationMap, s
       <div className="border-t border-slate-100 p-2.5 space-y-2">
         {hasSession && (
           <>
+            {otherSquadPlans && otherSquadPlans.length > 0 && (
+              <select value="" onChange={(e) => e.target.value && copyFromOtherSquad(e.target.value)}
+                className="w-full text-[12px] font-semibold rounded-lg border border-slate-300 text-slate-600 py-1.5 px-2 bg-white"
+                title="Copy every skill from another squad's lesson into this one">
+                <option value="">Copy plan from another squad…</option>
+                {otherSquadPlans.map((s) => <option key={s.key} value={s.key}>{s.squadName} — {s.dow} {fmtShortDate(s.date)}{s.startTime ? ` ${s.startTime}` : ""}</option>)}
+              </select>
+            )}
             <button onClick={exportOne} className="w-full disp font-semibold text-sm text-white rounded-lg py-2 flex items-center justify-center gap-1.5" style={{ background: NAVY }}>
               <IconDownload size={15} /> Export this lesson (Word)
             </button>
